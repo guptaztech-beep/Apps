@@ -14,11 +14,13 @@ import {
   getDocs
 } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { Blog, Comment, Reactions } from '../types';
+import { Blog, Comment, Reactions, WriterApplication, AppConfig } from '../types';
 import { BLOGS } from '../constants';
 
 interface BlogContextType {
   blogs: Blog[];
+  applications: WriterApplication[];
+  config: AppConfig;
   user: User | null;
   isAdmin: boolean;
   loading: boolean;
@@ -28,6 +30,9 @@ interface BlogContextType {
   addComment: (blogId: string, comment: Omit<Comment, 'id' | 'date'>) => Promise<void>;
   addReaction: (blogId: string, reaction: keyof Reactions) => Promise<void>;
   subscribe: (email: string) => Promise<void>;
+  submitApplication: (app: Omit<WriterApplication, 'id' | 'status' | 'date'>) => Promise<void>;
+  updateApplication: (id: string, status: WriterApplication['status']) => Promise<void>;
+  updateConfig: (config: AppConfig) => Promise<void>;
 }
 
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
@@ -36,6 +41,8 @@ const ADMIN_EMAIL = 'guptaztech@gmail.com';
 
 export function BlogProvider({ children }: { children: React.ReactNode }) {
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [applications, setApplications] = useState<WriterApplication[]>([]);
+  const [config, setConfig] = useState<AppConfig>({ logoUrl: '' });
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,24 +59,39 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
         id: doc.id, 
         ...doc.data() 
       } as Blog));
-
-      // Initial Seed if empty
-      if (blogData.length === 0) {
-        // We could seed here but maybe better to do it manually or via a button
-        // For now, let's keep it empty or use internal constants as fallback visual only
-      }
-
       setBlogs(blogData);
       setLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'blogs');
     });
 
+    // Subscriptions for applications (admins only)
+    let unsubApps = () => {};
+    if (isAdmin) {
+      const appQ = query(collection(db, 'applications'), orderBy('createdAt', 'desc'));
+      unsubApps = onSnapshot(appQ, (snapshot) => {
+        const appData = snapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data() 
+        } as WriterApplication));
+        setApplications(appData);
+      });
+    }
+
+    // Subscriptions for config
+    const unsubConfig = onSnapshot(doc(db, 'config', 'main'), (snapshot) => {
+      if (snapshot.exists()) {
+        setConfig(snapshot.data() as AppConfig);
+      }
+    });
+
     return () => {
       unsubAuth();
       unsubBlogs();
+      unsubApps();
+      unsubConfig();
     };
-  }, []);
+  }, [isAdmin]);
 
   const addBlog = async (blog: Omit<Blog, 'id'>) => {
     try {
@@ -141,9 +163,40 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const submitApplication = async (app: Omit<WriterApplication, 'id' | 'status' | 'date'>) => {
+    try {
+      await addDoc(collection(db, 'applications'), {
+        ...app,
+        status: 'pending',
+        date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'applications');
+    }
+  };
+
+  const updateApplication = async (id: string, status: WriterApplication['status']) => {
+    try {
+      await updateDoc(doc(db, 'applications', id), { status });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `applications/${id}`);
+    }
+  };
+
+  const updateConfig = async (newConfig: AppConfig) => {
+    try {
+      await setDoc(doc(db, 'config', 'main'), newConfig, { merge: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, 'config/main');
+    }
+  };
+
   return (
     <BlogContext.Provider value={{ 
       blogs, 
+      applications,
+      config,
       user, 
       isAdmin, 
       loading,
@@ -152,7 +205,10 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
       deleteBlog, 
       addComment, 
       addReaction,
-      subscribe
+      subscribe,
+      submitApplication,
+      updateApplication,
+      updateConfig
     }}>
       {children}
     </BlogContext.Provider>

@@ -6,6 +6,9 @@ import BlogDetails from './components/BlogDetails';
 import Footer from './components/Footer';
 
 import AdminPanel from './components/AdminPanel';
+import Careers from './pages/Careers';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import EditorialPolicy from './pages/EditorialPolicy';
 
 function Home() {
   return (
@@ -40,6 +43,9 @@ export default function App() {
                 <Route path="/category/:categorySlug" element={<CategoryPage />} />
                 <Route path="/blog/:slug" element={<BlogDetails />} />
                 <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/careers" element={<Careers />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/editorial-policy" element={<EditorialPolicy />} />
               </Routes>
             </main>
             <Footer />

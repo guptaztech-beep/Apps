@@ -74,11 +74,12 @@ export default function Footer() {
         </div>
 
         <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[9px] font-black uppercase tracking-[0.4em] text-slate-600">
-          <p>© 2026 EduPulse Media Group. Rights Reserved.</p>
+          <p>© 2026 RollFetch Media Solutions. Rights Reserved.</p>
           <div className="flex gap-10">
+            <Link to="/careers" className="hover:text-white transition-colors">Careers</Link>
             <Link to="/admin" className="hover:text-white transition-colors">Admin Desk</Link>
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Editorial Policy</a>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link to="/editorial-policy" className="hover:text-white transition-colors">Editorial Policy</Link>
             <a href="#" className="hover:text-white transition-colors">Contact</a>
           </div>
         </div>

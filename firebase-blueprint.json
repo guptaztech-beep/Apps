@@ -41,11 +41,35 @@
         "createdAt": { "type": "string" }
       },
       "required": ["email"]
+    },
+    "writerApplication": {
+      "title": "Writer Application",
+      "description": "Request to become a verified writer",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "portfolio": { "type": "string" },
+        "bio": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "date": { "type": "string" }
+      },
+      "required": ["name", "email", "portfolio", "bio", "status"]
+    },
+    "appConfig": {
+      "title": "Application Configuration",
+      "description": "Global branding and settings",
+      "type": "object",
+      "properties": {
+        "logoUrl": { "type": "string" }
+      }
     }
   },
   "firestore": {
     "/blogs": { "schema": "blog", "description": "Global news dispatches" },
     "/blogs/{blogId}/comments": { "schema": "comment", "description": "Comments for a post" },
-    "/subscribers": { "schema": "subscriber", "description": "Newsletter list" }
+    "/subscribers": { "schema": "subscriber", "description": "Newsletter list" },
+    "/applications": { "schema": "writerApplication", "description": "Writer hiring pool" },
+    "/config": { "schema": "appConfig", "description": "System settings" }
   }
 }

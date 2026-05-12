@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { auth, googleProvider, signInWithPopup, signOut } from '../lib/firebase';
 
 export default function Navbar() {
-  const { user } = useBlogs();
+  const { user, config } = useBlogs();
   const { theme, toggleTheme } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
@@ -77,16 +77,23 @@ export default function Navbar() {
 
       <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4 sm:py-8'}`}>
         <div className="flex flex-col lg:flex-row justify-between items-center gap-2 lg:gap-6">
-          <Link to="/" className={`flex flex-col items-center lg:items-start group transition-all duration-300 ${isScrolled ? 'scale-75 lg:scale-90' : 'scale-100'}`}>
-            <h1 className={`${isScrolled ? 'text-3xl' : 'text-4xl sm:text-6xl'} font-serif font-black italic leading-none tracking-tighter group-hover:opacity-80 transition-all`}>
-              RollFetch
-            </h1>
-            {!isScrolled && (
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.3em] font-black italic text-primary/60">Exams & Results Daily</span>
-                <span className="bg-red-600 w-1.5 h-1.5 rounded-full animate-pulse" />
+          <Link to="/" className={`flex flex-col lg:flex-row items-center gap-3 lg:items-start group transition-all duration-300 ${isScrolled ? 'scale-75 lg:scale-90' : 'scale-100'}`}>
+            <div className={`flex items-center gap-3 ${isScrolled ? 'lg:flex-row' : 'lg:flex-row flex-col'}`}>
+              {config.logoUrl && (
+                <img src={config.logoUrl} alt="Logo" className={`${isScrolled ? 'w-8 h-8' : 'w-12 h-12'} object-contain border border-black/5 p-1 rounded-sm shadow-sm`} />
+              )}
+              <div>
+                <h1 className={`${isScrolled ? 'text-3xl' : 'text-4xl sm:text-6xl'} font-serif font-black italic leading-none tracking-tighter group-hover:opacity-80 transition-all`}>
+                  RollFetch
+                </h1>
+                {!isScrolled && (
+                  <div className="flex items-center gap-2 mt-2 justify-center lg:justify-start">
+                    <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.3em] font-black italic text-primary/60">Exams & Results Daily</span>
+                    <span className="bg-red-600 w-1.5 h-1.5 rounded-full animate-pulse" />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </Link>
 
           <nav className={`flex items-center gap-4 sm:gap-10 text-[10px] sm:text-[11px] uppercase font-black tracking-widest sm:tracking-[0.3em] text-slate-500 overflow-x-auto w-full lg:w-auto justify-center sm:justify-start whitespace-nowrap scrollbar-hide transition-all ${isScrolled ? 'border-none pb-0 pt-0' : 'border-t lg:border-t-0 border-black/5 pt-4 lg:pt-0 pb-2 sm:pb-0'}`}>

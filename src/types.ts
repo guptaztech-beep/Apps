@@ -11,6 +11,20 @@ export interface Reactions {
   helpful: number;
 }
 
+export interface WriterApplication {
+  id: string;
+  name: string;
+  email: string;
+  portfolio: string;
+  bio: string;
+  status: 'pending' | 'approved' | 'rejected';
+  date: string;
+}
+
+export interface AppConfig {
+  logoUrl: string;
+}
+
 export interface Blog {
   id: string;
   title: string;

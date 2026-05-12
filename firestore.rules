@@ -42,5 +42,19 @@ service cloud.firestore {
       allow create: if isValidId(subId) && request.resource.data.email.size() < 256;
       allow read, update, delete: if isAdmin();
     }
+
+    // Applications: Anyone can create (pending), Admin can read/update/delete
+    match /applications/{appId} {
+      allow create: if request.resource.data.status == 'pending' 
+                   && request.resource.data.name is string 
+                   && request.resource.data.name.size() < 200;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Config: Publicly readable for logo/branding, Admin can write
+    match /config/{configId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
   }
 }
