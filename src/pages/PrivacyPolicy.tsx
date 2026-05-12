@@ -49,12 +49,12 @@ export default function PrivacyPolicy() {
             </p>
           </section>
 
-          <section className="mb-12 p-8 bg-black !text-white">
+          <section className="mb-12 p-8 bg-black not-prose">
             <div className="flex items-start gap-4">
               <FileText className="text-primary shrink-0" size={32} />
               <div>
-                <h3 className="text-xl font-serif font-black italic mb-2 !text-white">Reader Autonomy</h3>
-                <p className="text-sm opacity-70 leading-relaxed italic !text-white">
+                <h3 className="text-xl font-serif font-black italic mb-2 text-white">Reader Autonomy</h3>
+                <p className="text-sm text-white leading-relaxed italic">
                   You retain complete sovereignty over your data. You may request data extraction or account neutralization at any time by contacting the Dispatch Desk.
                 </p>
               </div>

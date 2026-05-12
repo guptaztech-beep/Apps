@@ -23,6 +23,7 @@ export interface WriterApplication {
 
 export interface AppConfig {
   logoUrl: string;
+  logoHeight?: number;
 }
 
 export interface Blog {

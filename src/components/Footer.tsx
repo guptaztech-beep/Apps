@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 sm:gap-8 mb-16">
           <div className="col-span-1 md:col-span-1">
             <h3 className="text-2xl font-serif font-black italic text-white mb-6">RollFetch</h3>
-            <p className="text-[11px] uppercase tracking-widest font-bold leading-relaxed opacity-60">
+            <p className="text-[11px] uppercase tracking-widest font-bold leading-relaxed text-slate-300">
               India's leading student-first newspaper. Information verified by the Editorial Board and Academic Council.
             </p>
           </div>
@@ -73,7 +73,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[9px] font-black uppercase tracking-[0.4em] text-slate-600">
+        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[9px] font-black uppercase tracking-[0.4em] text-slate-500">
           <p>© 2026 RollFetch Media Solutions. Rights Reserved.</p>
           <div className="flex gap-10">
             <Link to="/careers" className="hover:text-white transition-colors">Careers</Link>

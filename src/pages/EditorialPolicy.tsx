@@ -53,9 +53,9 @@ export default function EditorialPolicy() {
             <p>
               While we maintain a bold and modern aesthetic, our reporting remains neutral. We distinguish clearly between <strong>Dispatches (News)</strong> and <strong>Editorials (Opinion)</strong>. 
             </p>
-            <div className="mt-8 flex items-center gap-6 p-6 bg-primary !text-white italic">
-              <Scale size={40} className="shrink-0 opacity-50" />
-              <p className="text-sm font-medium leading-relaxed !text-white">
+            <div className="mt-8 flex items-center gap-6 p-6 bg-primary italic not-prose">
+              <Scale size={40} className="shrink-0 opacity-50 text-white" />
+              <p className="text-sm font-medium leading-relaxed text-white">
                 RollFetch Media Solutions does not accept corporate influence or "sponsored results". Our loyalty remains to the student and the truth of the academic record.
               </p>
             </div>

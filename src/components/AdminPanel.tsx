@@ -35,10 +35,12 @@ export default function AdminPanel() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [logoUrl, setLogoUrl] = useState(config.logoUrl);
+  const [logoHeight, setLogoHeight] = useState(config.logoHeight || 40);
 
   useEffect(() => {
     setLogoUrl(config.logoUrl);
-  }, [config.logoUrl]);
+    setLogoHeight(config.logoHeight || 40);
+  }, [config.logoUrl, config.logoHeight]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-editorial-bg">
@@ -61,8 +63,8 @@ export default function AdminPanel() {
   );
 
   const handleUpdateLogo = async () => {
-    await updateConfig({ logoUrl });
-    alert("Brand logo updated successfully.");
+    await updateConfig({ logoUrl, logoHeight });
+    alert("Brand assets updated successfully.");
   };
   const [currentBlog, setCurrentBlog] = useState<Partial<Blog>>({
     title: '',
@@ -657,11 +659,37 @@ export default function AdminPanel() {
                       placeholder="https://link-to-your-logo.png"
                       className="w-full bg-editorial-aside border-2 border-primary/10 p-4 text-sm font-mono focus:border-primary outline-none transition-all"
                     />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-4 opacity-60">Logo Dimensions (Height)</label>
+                  <div className="flex items-center gap-4">
+                    <input 
+                      type="range" 
+                      min="20" 
+                      max="120" 
+                      value={logoHeight}
+                      onChange={e => setLogoHeight(parseInt(e.target.value))}
+                      className="flex-grow accent-primary"
+                    />
+                    <span className="text-xs font-mono font-black w-12 text-right">{logoHeight}px</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-4 opacity-60">Visual Preview</label>
+                  <div className="space-y-4">
                     <div className="p-6 bg-black/[0.02] border-2 border-dashed border-black/10 flex items-center justify-center min-h-[120px]">
                       {logoUrl ? (
-                        <img src={logoUrl} alt="Logo Preview" className="max-h-20 object-contain drop-shadow-sm" />
+                        <img 
+                          src={logoUrl} 
+                          alt="Logo Preview" 
+                          style={{ height: `${logoHeight}px` }}
+                          className="object-contain drop-shadow-sm" 
+                        />
                       ) : (
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-20">Preview_Unavailable</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Preview_Unavailable</span>
                       )}
                     </div>
                   </div>

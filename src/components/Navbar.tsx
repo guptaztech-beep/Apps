@@ -80,7 +80,12 @@ export default function Navbar() {
           <Link to="/" className={`flex flex-col lg:flex-row items-center gap-3 lg:items-start group transition-all duration-300 ${isScrolled ? 'scale-75 lg:scale-90' : 'scale-100'}`}>
             <div className={`flex items-center gap-3 ${isScrolled ? 'lg:flex-row' : 'lg:flex-row flex-col'}`}>
               {config.logoUrl && (
-                <img src={config.logoUrl} alt="Logo" className={`${isScrolled ? 'w-8 h-8' : 'w-12 h-12'} object-contain border border-black/5 p-1 rounded-sm shadow-sm`} />
+                <img 
+                  src={config.logoUrl} 
+                  alt="Logo" 
+                  style={{ height: isScrolled ? `${(config.logoHeight || 40) * 0.75}px` : `${config.logoHeight || 40}px` }}
+                  className="object-contain" 
+                />
               )}
               <div>
                 <h1 className={`${isScrolled ? 'text-3xl' : 'text-4xl sm:text-6xl'} font-serif font-black italic leading-none tracking-tighter group-hover:opacity-80 transition-all`}>
