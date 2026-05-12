@@ -1,6 +1,7 @@
 import { Search, Bell, Menu, User, LogOut, LogIn, Share2, Sun, Moon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useBlogs } from '../context/BlogContext';
 import { useTheme } from '../context/ThemeContext';
 import { auth, googleProvider, signInWithPopup, signOut } from '../lib/firebase';
@@ -11,9 +12,11 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   
+  const logoHeight = config.logoHeight || 40;
+  
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -25,83 +28,102 @@ export default function Navbar() {
   };
 
   return (
-    <header className={`bg-editorial-bg border-b border-primary sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'shadow-lg' : ''}`}>
-      <div className={`bg-primary text-editorial-bg text-[9px] sm:text-[10px] uppercase font-black px-4 sm:px-8 flex justify-between items-center tracking-widest relative z-50 transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 py-0 opacity-0' : 'h-10 py-2'}`}>
-        <div className="flex items-center gap-3 sm:gap-6">
-          <span className="opacity-80">Journal</span>
-          <span className="hidden lg:inline border-l border-editorial-bg/30 pl-4 opacity-80">Verified Academic News</span>
-        </div>
-        
-        <div className="flex items-center gap-2 sm:gap-6">
-          {/* Action Buttons Group */}
-          <div className="flex items-center gap-2 sm:gap-4 border-r border-editorial-bg/20 pr-2 sm:pr-4">
-            <button 
-              onClick={toggleTheme}
-              className="flex items-center gap-1 hover:text-secondary transition-all"
-              title="Toggle Appearance"
-            >
-              {theme === 'light' ? <Moon size={11} /> : <Sun size={11} />}
-              <span className="hidden sm:inline">{theme === 'light' ? 'Dark' : 'Light'}</span>
-            </button>
+    <header className={`bg-editorial-bg border-b border-primary sticky top-0 z-50 transition-shadow duration-300 ${isScrolled ? 'shadow-lg' : ''}`}>
+      <AnimatePresence>
+        {!isScrolled && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: '2.5rem', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-primary text-editorial-bg text-[9px] sm:text-[10px] uppercase font-black px-4 sm:px-8 flex justify-between items-center tracking-widest relative z-50 overflow-hidden"
+          >
+            <div className="flex items-center gap-3 sm:gap-6">
+              <span className="opacity-80">Journal</span>
+              <span className="hidden lg:inline border-l border-editorial-bg/30 pl-4 opacity-80">Verified Academic News</span>
+            </div>
+            
+            <div className="flex items-center gap-2 sm:gap-6">
+              <div className="flex items-center gap-2 sm:gap-4 border-r border-editorial-bg/20 pr-2 sm:pr-4">
+                <button 
+                  onClick={toggleTheme}
+                  className="flex items-center gap-1 hover:text-secondary transition-all"
+                  title="Toggle Appearance"
+                >
+                  {theme === 'light' ? <Moon size={11} /> : <Sun size={11} />}
+                  <span className="hidden sm:inline">{theme === 'light' ? 'Dark' : 'Light'}</span>
+                </button>
 
-            <button 
-              onClick={() => {
-                const text = "Stay updated with RollFetch - India's Student Journal: ";
-                const url = window.location.origin;
-                window.open(`https://wa.me/?text=${encodeURIComponent(text + url)}`, '_blank');
-              }}
-              className="flex items-center gap-1.5 hover:text-secondary transition-all"
-            >
-              <Share2 size={11} /> Share
-            </button>
-          </div>
+                <button 
+                  onClick={() => {
+                    const text = "Stay updated with RollFetch - India's Student Journal: ";
+                    const url = window.location.origin;
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text + url)}`, '_blank');
+                  }}
+                  className="flex items-center gap-1.5 hover:text-secondary transition-all"
+                >
+                  <Share2 size={11} /> Share
+                </button>
+              </div>
 
-          {/* User / Journal Access */}
-          <div className="flex items-center gap-4">
-            {user?.email === 'guptaztech@gmail.com' && (
-              <Link to="/admin" className="text-secondary hover:underline font-black">Editor Desk</Link>
-            )}
-            <button 
-              onClick={user ? () => signOut(auth) : () => signInWithPopup(auth, googleProvider)}
-              className="flex items-center gap-1.5 hover:text-secondary transition-all"
-            >
-              {user ? (
-                <><LogOut size={11} /> {user.displayName?.split(' ')[0] || 'Logout'}</>
-              ) : (
-                <><LogIn size={11} /> Login</>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
+              <div className="flex items-center gap-4">
+                {user?.email === 'guptaztech@gmail.com' && (
+                  <Link to="/admin" className="text-secondary hover:underline font-black">Editor Desk</Link>
+                )}
+                <button 
+                  onClick={user ? () => signOut(auth) : () => signInWithPopup(auth, googleProvider)}
+                  className="flex items-center gap-1.5 hover:text-secondary transition-all"
+                >
+                  {user ? (
+                    <><LogOut size={11} /> {user.displayName?.split(' ')[0] || 'Logout'}</>
+                  ) : (
+                    <><LogIn size={11} /> Login</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4 sm:py-8'}`}>
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-2 lg:gap-6">
-          <Link to="/" className={`flex flex-col lg:flex-row items-center gap-3 lg:items-start group transition-all duration-300 ${isScrolled ? 'scale-75 lg:scale-90' : 'scale-100'}`}>
-            <div className={`flex items-center gap-3 ${isScrolled ? 'lg:flex-row' : 'lg:flex-row flex-col'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-4 lg:gap-6 py-4 sm:py-8">
+          <Link to="/" className="flex flex-col lg:flex-row items-center gap-3 lg:items-start group w-full lg:w-auto">
+            <div className={`flex items-center lg:items-start gap-4 transition-all duration-300 w-full justify-center lg:justify-start ${isScrolled ? 'flex-row' : 'flex-col lg:flex-row'}`}>
               {config.logoUrl && (
-                <img 
+                <motion.img 
+                  layout
                   src={config.logoUrl} 
                   alt="Logo" 
-                  style={{ height: isScrolled ? `${(config.logoHeight || 40) * 0.75}px` : `${config.logoHeight || 40}px` }}
+                  animate={{ 
+                    height: isScrolled ? logoHeight * 0.7 : logoHeight,
+                  }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   className="object-contain" 
+                  referrerPolicy="no-referrer"
                 />
               )}
-              <div>
-                <h1 className={`${isScrolled ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl md:text-6xl'} font-serif font-black italic leading-none tracking-tighter group-hover:opacity-80 transition-all`}>
+              <div className="flex flex-col items-center lg:items-start">
+                <motion.h1 
+                  layout
+                  className={`${isScrolled ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-5xl md:text-6xl'} font-serif font-black italic leading-none tracking-tighter group-hover:opacity-80 transition-all`}
+                >
                   RollFetch
-                </h1>
+                </motion.h1>
                 {!isScrolled && (
-                  <div className="flex items-center gap-2 mt-2 justify-center lg:justify-start">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-center gap-2 mt-2"
+                  >
                     <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.3em] font-black italic text-primary/60">Exams & Results Daily</span>
                     <span className="bg-red-600 w-1.5 h-1.5 rounded-full animate-pulse" />
-                  </div>
+                  </motion.div>
                 )}
               </div>
             </div>
           </Link>
 
-          <nav className={`flex items-center gap-4 sm:gap-10 text-[10px] sm:text-[11px] uppercase font-black tracking-widest sm:tracking-[0.3em] text-slate-500 overflow-x-auto w-full lg:w-auto justify-center sm:justify-start whitespace-nowrap scrollbar-hide transition-all ${isScrolled ? 'border-none pb-0 pt-0' : 'border-t lg:border-t-0 border-black/5 pt-4 lg:pt-0 pb-2 sm:pb-0'}`}>
+          <nav className={`flex items-center gap-4 sm:gap-10 text-[10px] sm:text-[11px] uppercase font-black tracking-widest sm:tracking-[0.3em] text-slate-500 overflow-x-auto w-full lg:w-auto justify-center whitespace-nowrap scrollbar-hide transition-all ${isScrolled ? 'mt-0' : 'mt-2 lg:mt-0 border-t lg:border-t-0 border-black/5 pt-4 lg:pt-0 pb-1 lg:pb-0'}`}>
             <Link 
               to="/" 
               className={`pb-1 transition-all border-b-2 ${isActive('/') ? 'text-primary border-primary' : 'border-transparent hover:text-primary'}`}
