@@ -16,7 +16,7 @@ export default function Navbar() {
   
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 0);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -28,7 +28,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className={`bg-editorial-bg border-b border-primary sticky top-0 z-50 transition-shadow duration-300 ${isScrolled ? 'shadow-lg' : ''}`}>
+    <header className={`border-b border-primary sticky top-0 z-[100] transition-all duration-300 ${isScrolled ? 'shadow-xl bg-editorial-bg/95 backdrop-blur-md' : 'bg-editorial-bg'}`}>
       <AnimatePresence>
         {!isScrolled && (
           <motion.div 
@@ -86,8 +86,8 @@ export default function Navbar() {
       </AnimatePresence>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300">
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-4 lg:gap-6 py-4 sm:py-8">
-          <Link to="/" className="flex flex-col lg:flex-row items-center gap-3 lg:items-start group w-full lg:w-auto">
+        <div className={`flex flex-col lg:flex-row justify-between items-center gap-2 lg:gap-6 transition-all duration-300 ${isScrolled ? 'py-1 sm:py-2' : 'py-4 sm:py-8'}`}>
+          <Link to="/" className="flex flex-col lg:flex-row items-center gap-3 lg:items-start group w-full lg:w-auto h-full justify-center">
             <div className={`flex items-center lg:items-start gap-4 transition-all duration-300 w-full justify-center lg:justify-start ${isScrolled ? 'flex-row' : 'flex-col lg:flex-row'}`}>
               {config.logoUrl && (
                 <motion.img 
@@ -95,10 +95,10 @@ export default function Navbar() {
                   src={config.logoUrl} 
                   alt="Logo" 
                   animate={{ 
-                    height: isScrolled ? logoHeight * 0.7 : logoHeight,
+                    height: isScrolled ? Math.min(logoHeight * 0.6, 32) : logoHeight,
                   }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className="object-contain" 
+                  className="object-contain bg-transparent" 
                   referrerPolicy="no-referrer"
                 />
               )}
@@ -123,7 +123,7 @@ export default function Navbar() {
             </div>
           </Link>
 
-          <nav className={`flex items-center gap-4 sm:gap-10 text-[10px] sm:text-[11px] uppercase font-black tracking-widest sm:tracking-[0.3em] text-slate-500 overflow-x-auto w-full lg:w-auto justify-center whitespace-nowrap scrollbar-hide transition-all ${isScrolled ? 'mt-0' : 'mt-2 lg:mt-0 border-t lg:border-t-0 border-black/5 pt-4 lg:pt-0 pb-1 lg:pb-0'}`}>
+          <nav className={`flex items-center gap-3 sm:gap-10 text-[10px] sm:text-[11px] uppercase font-black tracking-widest sm:tracking-[0.3em] text-slate-500 overflow-x-auto w-full lg:w-auto justify-center whitespace-nowrap scrollbar-hide transition-all ${isScrolled ? 'mt-0 gap-4' : 'mt-2 lg:mt-0 border-t lg:border-t-0 border-black/5 pt-4 lg:pt-0 pb-1 lg:pb-0'}`}>
             <Link 
               to="/" 
               className={`pb-1 transition-all border-b-2 ${isActive('/') ? 'text-primary border-primary' : 'border-transparent hover:text-primary'}`}
