@@ -23,7 +23,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
         <img 
           src={blog.imageUrl} 
           alt={blog.title} 
-          className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+          className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700"
         />
         <div className="absolute top-4 left-4">
           <span className="bg-black text-white text-[9px] sm:text-[10px] font-bold px-2 sm:px-3 py-1 uppercase tracking-[0.2em]">

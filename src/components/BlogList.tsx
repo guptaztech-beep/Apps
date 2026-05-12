@@ -12,7 +12,15 @@ export default function BlogList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<Category>((categorySlug as Category) || 'All');
 
-  const categories: Category[] = ['All', 'CBSE', 'NEET', 'How-To', 'Exam', 'Result'];
+  const categories = useMemo(() => {
+    const cats = ['All', 'CBSE', 'NEET', 'How-To', 'Exam', 'Result'];
+    blogs.forEach(blog => {
+      if (!cats.includes(blog.category)) {
+        cats.push(blog.category);
+      }
+    });
+    return cats;
+  }, [blogs]);
 
   const filteredBlogs = useMemo(() => {
     return blogs.filter(blog => {

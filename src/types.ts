@@ -17,7 +17,7 @@ export interface Blog {
   slug: string;
   excerpt: string;
   content: string;
-  category: 'CBSE' | 'NEET' | 'How-To' | 'Exam' | 'Result';
+  category: string;
   date: string;
   author: string;
   imageUrl: string;
@@ -29,4 +29,4 @@ export interface Blog {
   reactions?: Reactions;
 }
 
-export type Category = Blog['category'] | 'All';
+export type Category = string | 'All';

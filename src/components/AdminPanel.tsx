@@ -258,17 +258,24 @@ export default function AdminPanel() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Column Category</label>
-                  <select 
+                  <input 
+                    list="categories"
+                    type="text"
                     value={currentBlog.category}
-                    onChange={e => setCurrentBlog({...currentBlog, category: e.target.value as any})}
+                    onChange={e => setCurrentBlog({...currentBlog, category: e.target.value})}
                     className="w-full bg-editorial-aside border-2 border-primary/10 p-4 text-xs font-bold focus:border-primary outline-none transition-all uppercase tracking-widest text-editorial-text"
-                  >
-                    <option value="CBSE">CBSE</option>
-                    <option value="NEET">NEET</option>
-                    <option value="Exam">Exam</option>
-                    <option value="Result">Result</option>
-                    <option value="How-To">How-To</option>
-                  </select>
+                    placeholder="Select or Type Category..."
+                  />
+                  <datalist id="categories">
+                    <option value="CBSE" />
+                    <option value="NEET" />
+                    <option value="Exam" />
+                    <option value="Result" />
+                    <option value="How-To" />
+                    {[...new Set(blogs.map(b => b.category))].map(cat => (
+                      <option key={cat} value={cat} />
+                    ))}
+                  </datalist>
                 </div>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Featured Status</label>
@@ -308,9 +315,12 @@ export default function AdminPanel() {
                 <textarea 
                   value={currentBlog.excerpt}
                   onChange={e => setCurrentBlog({...currentBlog, excerpt: e.target.value})}
-                  className="w-full bg-editorial-aside border-2 border-primary/10 p-4 text-sm font-medium focus:border-primary outline-none transition-all h-32 text-editorial-text"
+                  className="w-full bg-editorial-aside border-2 border-primary/10 p-4 text-sm font-medium focus:border-primary outline-none transition-all h-32 text-editorial-text resize-none"
                   placeholder="Short engaging summary..."
                 />
+                <div className="mt-2 text-[9px] uppercase font-bold opacity-30 text-right">
+                  Characters: {currentBlog.excerpt?.length || 0}
+                </div>
               </div>
 
               <div>
@@ -482,7 +492,7 @@ export default function AdminPanel() {
           <div key={blog.id} className="bg-editorial-bg border-2 border-black/5 flex flex-col sm:flex-row items-center justify-between p-6 hover:border-black transition-all group overflow-hidden">
             <div className="flex items-center gap-6 mb-6 sm:mb-0 w-full sm:w-auto">
               <div className="w-16 h-16 border-2 border-black overflow-hidden flex-shrink-0 group-hover:border-primary transition-colors">
-                <img src={blog.imageUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                <img src={blog.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" />
               </div>
               <div className="min-w-0 flex-grow">
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/40 group-hover:text-primary transition-colors">{blog.category} _ {blog.date}</span>

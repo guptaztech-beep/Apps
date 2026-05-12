@@ -120,7 +120,7 @@ export default function Hero() {
               <img 
                 src={currentBlog.imageUrl} 
                 alt={currentBlog.title} 
-                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                className="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000"
               />
             </motion.div>
           </AnimatePresence>

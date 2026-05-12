@@ -127,7 +127,7 @@ export default function BlogDetails() {
             <img 
               src={blog.imageUrl} 
               alt={blog.title} 
-              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700 hover:scale-105"
+              className="w-full h-full object-cover transition-all duration-1000 hover:scale-110"
             />
           </div>
           <div className="p-8 sm:p-16">
@@ -142,8 +142,8 @@ export default function BlogDetails() {
             {blog.galleryImages && blog.galleryImages.length > 0 && (
               <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {blog.galleryImages.map((img, idx) => (
-                  <div key={idx} className={`border-2 border-black overflow-hidden ${idx === 0 && blog.galleryImages!.length % 2 !== 0 ? 'sm:col-span-2 aspect-video' : 'aspect-square'}`}>
-                    <img src={img} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="Gallery detail" />
+                  <div key={idx} className={`border-2 border-black overflow-hidden group/gal ${idx === 0 && blog.galleryImages!.length % 2 !== 0 ? 'sm:col-span-2 aspect-video' : 'aspect-square'}`}>
+                    <img src={img} className="w-full h-full object-cover transition-all duration-1000 hover:scale-110" alt="Gallery detail" />
                   </div>
                 ))}
               </div>
@@ -231,7 +231,7 @@ export default function BlogDetails() {
                   <div className="relative aspect-[4/3] border-2 border-black overflow-hidden mb-6 group-hover:shadow-[8px_8px_0_0_rgba(254,240,138,1)] transition-all">
                     <img 
                       src={rb.imageUrl} 
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000" 
                       alt={rb.title} 
                     />
                     <div className="absolute top-4 left-4 bg-primary text-editorial-bg px-2 py-1 text-[8px] font-black uppercase tracking-widest">
