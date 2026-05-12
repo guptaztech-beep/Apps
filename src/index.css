@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  
+  --color-editorial-bg: #FDFDFB;
+  --color-editorial-aside: #F5F2ED;
+  --color-editorial-text: #1A1A1A;
+  
+  --color-primary: #1A1A1A;
+  --color-secondary: #fef08a; /* yellow-200 */
+}
+
+@layer base {
+  body {
+    @apply bg-editorial-bg text-editorial-text font-sans antialiased font-normal;
+  }
+  
+  .dark {
+    --color-editorial-bg: #0a0a0a;
+    --color-editorial-aside: #171717;
+    --color-editorial-text: #e5e5e5;
+    --color-primary: #f8fafc;
+    --color-secondary: #eab308;
+    color-scheme: dark;
+  }
+  
+  .dark .text-slate-900,
+  .dark .text-black {
+    @apply text-editorial-text;
+  }
+  
+  .dark .bg-white {
+    @apply bg-editorial-aside;
+  }
+
+  .dark .border-black/5,
+  .dark .border-black/10 {
+    @apply border-white/10;
+  }
+  
+  .markdown-body {
+    @apply font-serif font-normal;
+  }
+
+  /* Markdown specific fixes to match ChatGPT style better */
+  .prose p {
+    @apply mb-6 last:mb-0 leading-[1.8] font-normal text-editorial-text;
+  }
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    @apply font-serif font-black tracking-tighter text-editorial-text;
+    @apply mt-12 mb-6;
+  }
+  .prose ul, .prose ol {
+    @apply my-6 ml-6;
+  }
+  .prose li {
+    @apply mb-2 font-normal text-editorial-text;
+  }
+  .prose blockquote p {
+    @apply mb-0 italic;
+  }
+  .prose code {
+    @apply bg-editorial-aside px-1.5 py-0.5 rounded text-primary font-mono text-sm font-medium;
+  }
+  .prose pre {
+    @apply bg-editorial-aside border-2 border-black/10 p-6 my-8 overflow-x-auto rounded-none font-mono text-sm;
+  }
+  .prose strong {
+    @apply text-primary font-bold;
+  }
+  .prose em {
+    @apply italic text-inherit;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-editorial-bg;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/20 hover:bg-primary/40 transition-colors;
+    border-radius: 10px;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  * {
+    @apply transition-colors duration-300;
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "entities": {
+    "blog": {
+      "title": "Blog Post",
+      "description": "An academic news dispatch",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "category": { "type": "string" },
+        "date": { "type": "string" },
+        "author": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "isFeatured": { "type": "boolean" },
+        "officialLinks": { "type": "array" },
+        "reactions": { "type": "object" },
+        "authorId": { "type": "string" }
+      },
+      "required": ["title", "slug", "category", "content"]
+    },
+    "comment": {
+      "title": "Comment",
+      "description": "User shared perspective",
+      "type": "object",
+      "properties": {
+        "author": { "type": "string" },
+        "text": { "type": "string" },
+        "date": { "type": "string" },
+        "blogId": { "type": "string" }
+      },
+      "required": ["author", "text", "blogId"]
+    },
+    "subscriber": {
+      "title": "Subscriber",
+      "description": "Educational newsletter subscriber",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/blogs": { "schema": "blog", "description": "Global news dispatches" },
+    "/blogs/{blogId}/comments": { "schema": "comment", "description": "Comments for a post" },
+    "/subscribers": { "schema": "subscriber", "description": "Newsletter list" }
+  }
+}

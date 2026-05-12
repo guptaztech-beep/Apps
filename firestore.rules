@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      // For this app, only the owner/guptaztech is admin
+      return isSignedIn() && (
+        request.auth.token.email == 'guptaztech@gmail.com' && request.auth.token.email_verified == true
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Blogs: Public read, Admin write
+    match /blogs/{blogId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(blogId);
+      allow update: if (isAdmin() || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])));
+      allow delete: if isAdmin();
+
+      // Comments: Anyone can create, any one can read
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isValidId(commentId) && request.resource.data.text.size() < 1000;
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // Subscribers: Anyone can create, Admin can read
+    match /subscribers/{subId} {
+      allow create: if isValidId(subId) && request.resource.data.email.size() < 256;
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
