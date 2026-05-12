@@ -35,7 +35,7 @@ export default function App() {
     <ThemeProvider>
       <BlogProvider>
         <Router>
-          <div className="min-h-screen flex flex-col bg-editorial-bg transition-colors duration-300">
+          <div className="min-h-screen flex flex-col bg-editorial-bg transition-colors duration-300 overflow-x-hidden w-full">
             <Navbar />
             <main className="flex-grow">
               <Routes>

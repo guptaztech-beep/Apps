@@ -50,7 +50,7 @@ export default function AdminPanel() {
 
   if (!isAdmin) return (
     <div className="min-h-screen flex items-center justify-center bg-editorial-bg p-8">
-      <div className="max-w-md w-full bg-editorial-bg border-4 border-black p-12 text-center shadow-[16px_16px_0_0_rgba(0,0,0,1)] dark:shadow-white/5">
+      <div className="max-w-md w-full bg-editorial-bg border-4 border-black p-12 text-center shadow-[10px_10px_0_0_rgba(0,0,0,1)] sm:shadow-[16px_16px_0_0_rgba(0,0,0,1)] dark:shadow-white/5">
         <h2 className="text-3xl font-serif font-black italic mb-6">Access_Denied</h2>
         <p className="text-xs font-bold uppercase tracking-widest text-slate-500 leading-relaxed mb-8">
           Unauthorized clearance detected. This node is reserved for RollFetch Editorial Council members only.
@@ -229,7 +229,7 @@ export default function AdminPanel() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-12 border-b-4 border-black pb-8">
         <div>
           <h2 className="text-4xl sm:text-5xl font-serif font-black italic tracking-tighter text-editorial-text">Editor Desk</h2>
-          <nav className="flex gap-6 mt-4">
+          <nav className="flex gap-6 mt-4 overflow-x-auto whitespace-nowrap scrollbar-hide pb-2">
             <button 
               onClick={() => { setActiveTab('dispatches'); setIsEditing(false); }}
               className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'dispatches' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-black'}`}
@@ -258,7 +258,7 @@ export default function AdminPanel() {
         {activeTab === 'dispatches' && (
           <button 
             onClick={handleCreate}
-            className="w-full sm:w-auto bg-primary text-editorial-bg px-8 py-4 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-[8px_8px_0_0_rgba(0,0,0,0.1)]"
+            className="w-full sm:w-auto bg-primary text-editorial-bg px-8 py-4 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-[4px_4px_0_0_rgba(0,0,0,0.1)] sm:shadow-[8px_8px_0_0_rgba(0,0,0,0.1)]"
           >
             <Plus size={18} /> Compose New
           </button>
@@ -643,7 +643,7 @@ export default function AdminPanel() {
             exit={{ opacity: 0 }}
             className="max-w-2xl mx-auto"
           >
-            <div className="bg-editorial-bg border-4 border-black p-8 sm:p-12 shadow-[12px_12px_0_0_rgba(0,0,0,0.05)]">
+            <div className="bg-editorial-bg border-4 border-black p-8 sm:p-12 shadow-[8px_8px_0_0_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0_0_rgba(0,0,0,0.05)]">
               <h3 className="text-2xl font-serif font-black mb-8 border-b border-black/10 pb-4 flex items-center gap-3">
                 <ImageIcon className="text-primary" /> Brand Identity
               </h3>

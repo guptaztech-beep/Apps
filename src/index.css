@@ -15,7 +15,11 @@
 
 @layer base {
   body {
-    @apply bg-editorial-bg text-editorial-text font-sans antialiased font-normal;
+    @apply bg-editorial-bg text-editorial-text font-sans antialiased font-normal overflow-x-hidden w-full;
+  }
+  
+  html {
+    @apply overflow-x-hidden;
   }
   
   .dark {

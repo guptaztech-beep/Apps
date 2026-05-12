@@ -73,9 +73,9 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[9px] font-black uppercase tracking-[0.4em] text-slate-500">
-          <p>© 2026 RollFetch Media Solutions. Rights Reserved.</p>
-          <div className="flex gap-10">
+        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 text-[9px] font-black uppercase tracking-[0.4em] text-slate-500">
+          <p className="text-center md:text-left">© 2026 RollFetch Media Solutions. Rights Reserved.</p>
+          <div className="flex flex-wrap justify-center md:justify-end gap-x-8 gap-y-4">
             <Link to="/careers" className="hover:text-white transition-colors">Careers</Link>
             <Link to="/admin" className="hover:text-white transition-colors">Admin Desk</Link>
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>

@@ -121,7 +121,7 @@ export default function BlogDetails() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-editorial-bg border-2 border-black overflow-hidden mb-16 shadow-[16px_16px_0_0_rgba(0,0,0,0.05)]"
+          className="bg-editorial-bg border-2 border-black overflow-hidden mb-16 shadow-[8px_8px_0_0_rgba(0,0,0,0.05)] sm:shadow-[16px_16px_0_0_rgba(0,0,0,0.05)]"
         >
           <div className="h-[300px] sm:h-[500px] border-b border-black group overflow-hidden">
             <img 

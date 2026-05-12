@@ -70,7 +70,7 @@ export default function BlogList() {
             onClick={() => setActiveCategory(cat)}
             className={`px-6 py-2 border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
               activeCategory === cat 
-                ? 'bg-primary text-editorial-bg border-primary shadow-[4px_4px_0_0_rgba(254,240,138,1)]' 
+                ? 'bg-primary text-editorial-bg border-primary shadow-[2px_2px_0_0_rgba(254,240,138,1)] sm:shadow-[4px_4px_0_0_rgba(254,240,138,1)]' 
                 : 'bg-editorial-bg text-slate-500 border-black/10 hover:border-black'
             }`}
           >

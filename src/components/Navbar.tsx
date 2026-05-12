@@ -27,21 +27,21 @@ export default function Navbar() {
   return (
     <header className={`bg-editorial-bg border-b border-primary sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'shadow-lg' : ''}`}>
       <div className={`bg-primary text-editorial-bg text-[9px] sm:text-[10px] uppercase font-black px-4 sm:px-8 flex justify-between items-center tracking-widest relative z-50 transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 py-0 opacity-0' : 'h-10 py-2'}`}>
-        <div className="flex items-center gap-6">
-          <span className="opacity-80">The Student Journal</span>
-          <span className="hidden md:inline border-l border-editorial-bg/30 pl-4 opacity-80">Verified Academic News</span>
+        <div className="flex items-center gap-3 sm:gap-6">
+          <span className="opacity-80">Journal</span>
+          <span className="hidden lg:inline border-l border-editorial-bg/30 pl-4 opacity-80">Verified Academic News</span>
         </div>
         
-        <div className="flex items-center gap-3 sm:gap-6">
+        <div className="flex items-center gap-2 sm:gap-6">
           {/* Action Buttons Group */}
-          <div className="flex items-center gap-4 border-r border-editorial-bg/20 pr-4 mr-2">
+          <div className="flex items-center gap-2 sm:gap-4 border-r border-editorial-bg/20 pr-2 sm:pr-4">
             <button 
               onClick={toggleTheme}
-              className="flex items-center gap-1.5 hover:text-secondary transition-all"
+              className="flex items-center gap-1 hover:text-secondary transition-all"
               title="Toggle Appearance"
             >
               {theme === 'light' ? <Moon size={11} /> : <Sun size={11} />}
-              <span className="hidden xs:inline">{theme === 'light' ? 'Dark' : 'Light'} Mode</span>
+              <span className="hidden sm:inline">{theme === 'light' ? 'Dark' : 'Light'}</span>
             </button>
 
             <button 
@@ -88,7 +88,7 @@ export default function Navbar() {
                 />
               )}
               <div>
-                <h1 className={`${isScrolled ? 'text-3xl' : 'text-4xl sm:text-6xl'} font-serif font-black italic leading-none tracking-tighter group-hover:opacity-80 transition-all`}>
+                <h1 className={`${isScrolled ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl md:text-6xl'} font-serif font-black italic leading-none tracking-tighter group-hover:opacity-80 transition-all`}>
                   RollFetch
                 </h1>
                 {!isScrolled && (

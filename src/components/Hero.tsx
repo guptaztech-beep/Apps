@@ -41,7 +41,7 @@ export default function Hero() {
     <div className="bg-editorial-bg text-editorial-text relative overflow-hidden border-b border-black">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row min-h-[600px]">
         {/* Left Side: Editorial Content */}
-        <div className="flex-1 p-6 sm:p-12 border-r border-black flex flex-col justify-center relative z-10">
+        <div className="flex-1 p-6 sm:p-12 md:border-r border-black flex flex-col justify-center relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentBlog.id}

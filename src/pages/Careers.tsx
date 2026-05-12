@@ -53,7 +53,7 @@ export default function Careers() {
             </div>
           </div>
 
-          <div className="bg-white border-2 border-primary shadow-[12px_12px_0_0_rgba(37,99,235,1)] p-8 sm:p-12 relative overflow-hidden">
+          <div className="bg-white border-2 border-primary shadow-[8px_8px_0_0_rgba(254,240,138,1)] sm:shadow-[12px_12px_0_0_rgba(254,240,138,1)] p-8 sm:p-12 relative overflow-hidden">
             {submitted ? (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
