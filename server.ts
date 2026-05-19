@@ -54,27 +54,26 @@ async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: "custom", // Changed to custom to handle fallback manually and reliably
+      appType: "spa",
     });
     app.use(vite.middlewares);
-    
-    app.get("*", async (req, res, next) => {
-      const url = req.originalUrl;
-      if (url.startsWith("/api")) return next();
-      
-      try {
-        const template = await vite.transformIndexHtml(url, fs.readFileSync(path.resolve(process.cwd(), "index.html"), "utf-8"));
-        res.status(200).set({ "Content-Type": "text/html" }).end(template);
-      } catch (e) {
-        vite.ssrFixStacktrace(e as Error);
-        next(e);
-      }
-    });
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const distPath = path.resolve(process.cwd(), 'dist');
     app.use(express.static(distPath));
+    
+    // SPA fallback
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      // Exclude API and physical files (that would have extension)
+      if (req.url.startsWith('/api')) {
+        return res.status(404).json({ error: 'Not Found' });
+      }
+      
+      const indexPath = path.join(distPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(500).send('Project is still building or dist/index.html is missing.');
+      }
     });
   }
 
