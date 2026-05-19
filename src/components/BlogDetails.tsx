@@ -188,37 +188,60 @@ export default function BlogDetails() {
             />
           </div>
           <div className="p-8 sm:p-16">
-            <div className="markdown-body prose prose-slate dark:prose-invert max-w-none 
-              prose-p:text-base sm:prose-p:text-lg prose-p:leading-[1.8] prose-p:text-editorial-text
-              prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-editorial-aside prose-blockquote:p-6
-              prose-ul:list-disc prose-ol:list-decimal prose-li:text-editorial-text/80
-              prose-a:text-primary prose-a:underline hover:prose-a:italic">
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{blog.content}</ReactMarkdown>
+            <div className="relative mb-12">
+              {/* Floating images for desktop wrap-around */}
+              {blog.contentImages?.filter(img => img.alignment === 'left' || img.alignment === 'right').map((img, idx) => (
+                <figure 
+                  key={`float-${idx}`} 
+                  className={`hidden sm:flex flex-col gap-3 mb-6 ${
+                    img.alignment === 'left' ? 'float-left mr-8' : 'float-right ml-8'
+                  } w-1/3 max-w-[300px]`}
+                >
+                  <div className="border-2 border-black overflow-hidden shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+                    <img src={img.url} alt={img.caption || 'Article detail'} className="w-full object-cover" />
+                  </div>
+                  {img.caption && (
+                    <figcaption className="text-[9px] font-black uppercase tracking-widest text-slate-500 text-center italic">
+                      {img.caption}
+                    </figcaption>
+                  )}
+                </figure>
+              ))}
+
+              <div className="markdown-body prose prose-slate dark:prose-invert max-w-none 
+                prose-p:text-base sm:prose-p:text-lg prose-p:leading-[1.8] prose-p:text-editorial-text
+                prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-editorial-aside prose-blockquote:p-6
+                prose-ul:list-disc prose-ol:list-decimal prose-li:text-editorial-text/80
+                prose-a:text-primary prose-a:underline hover:prose-a:italic">
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{blog.content}</ReactMarkdown>
+              </div>
+              
+              <div className="clear-both" />
             </div>
 
+            {/* Mobile view of all images and Tablet/Desktop view of center/full images */}
             {blog.contentImages && blog.contentImages.length > 0 && (
               <div className="mt-12 space-y-12">
-                {blog.contentImages.map((img, idx) => (
-                  <figure 
-                    key={idx} 
-                    className={`flex flex-col gap-3 ${
-                      img.alignment === 'left' ? 'sm:w-1/2 sm:float-left sm:mr-8 sm:mb-6' : 
-                      img.alignment === 'right' ? 'sm:w-1/2 sm:float-right sm:ml-8 sm:mb-6' : 
-                      img.alignment === 'center' ? 'sm:max-w-2xl mx-auto' : 
-                      'w-full'
-                    }`}
-                  >
-                    <div className="border-2 border-black overflow-hidden shadow-[4px_4px_0_0_rgba(0,0,0,0.05)]">
-                      <img src={img.url} alt={img.caption || 'Article detail'} className="w-full object-cover" />
-                    </div>
-                    {img.caption && (
-                      <figcaption className="text-[10px] font-bold uppercase tracking-widest text-slate-500 text-center italic">
-                        {img.caption}
-                      </figcaption>
-                    )}
-                  </figure>
-                ))}
-                <div className="clear-both" />
+                {blog.contentImages.map((img, idx) => {
+                  const isFloating = img.alignment === 'left' || img.alignment === 'right';
+                  return (
+                    <figure 
+                      key={idx} 
+                      className={`${isFloating ? 'sm:hidden' : 'flex'} flex-col gap-3 ${
+                        img.alignment === 'center' ? 'sm:max-w-2xl mx-auto' : 'w-full'
+                      }`}
+                    >
+                      <div className="border-2 border-black overflow-hidden shadow-[6px_6px_0_0_rgba(0,0,0,0.05)]">
+                        <img src={img.url} alt={img.caption || 'Article detail'} className="w-full object-cover" />
+                      </div>
+                      {img.caption && (
+                        <figcaption className="text-[10px] font-bold uppercase tracking-widest text-slate-500 text-center italic">
+                          {img.caption}
+                        </figcaption>
+                      )}
+                    </figure>
+                  );
+                })}
               </div>
             )}
 

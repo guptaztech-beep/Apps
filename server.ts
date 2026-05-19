@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import fs from "fs";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -56,6 +57,21 @@ async function startServer() {
       appType: "spa",
     });
     app.use(vite.middlewares);
+    
+    // Explicit fallback for SPA in dev mode if vite middleware misses it
+    app.use('*', async (req, res, next) => {
+      const url = req.originalUrl;
+      if (url.startsWith('/api')) return next();
+      
+      try {
+        let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
