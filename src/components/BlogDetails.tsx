@@ -1,12 +1,17 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, User, Share2, ExternalLink, ChevronRight, ArrowRight, MessageSquare, ThumbsUp, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { 
+  ArrowLeft, Calendar, User, Share2, ExternalLink, ArrowRight, 
+  MessageSquare, ThumbsUp, Lightbulb, CheckCircle2, Download,
+  Instagram, Send, X
+} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useEffect, useState, useRef } from 'react';
 import { useBlogs } from '../context/BlogContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { Comment } from '../types';
+import { toPng } from 'html-to-image';
 
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
@@ -55,10 +60,52 @@ export default function BlogDetails() {
     );
   }
 
-  const handleShare = () => {
+  const [isGeneratingShare, setIsGeneratingShare] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
+
+  const generateShareImage = async () => {
+    if (!shareCardRef.current) return;
+    setIsGeneratingShare(true);
+    try {
+      const dataUrl = await toPng(shareCardRef.current, {
+        cacheBust: true,
+        quality: 1,
+        pixelRatio: 2
+      });
+      const link = document.createElement('a');
+      link.download = `rollfetch-${blog.slug}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Share image generation failed:', err);
+      alert('Failed to generate preview image.');
+    } finally {
+      setIsGeneratingShare(false);
+    }
+  };
+
+  const handleShare = (platform: 'whatsapp' | 'instagram' | 'general') => {
     const text = `Check this official update: ${blog.title}\n\n`;
     const url = window.location.href;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text + url)}`, '_blank');
+    
+    if (platform === 'whatsapp') {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text + url)}`, '_blank');
+    } else if (platform === 'instagram') {
+      // Instagram doesn't support direct story intent from web well, but we can suggest copying link
+      navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard! You can now paste it in your Instagram Story.');
+    } else {
+      if (navigator.share) {
+        navigator.share({
+          title: blog.title,
+          text: blog.excerpt,
+          url: url
+        });
+      } else {
+        setShowShareModal(true);
+      }
+    }
   };
 
   const handleCommentSubmit = (e: React.FormEvent) => {
@@ -92,9 +139,19 @@ export default function BlogDetails() {
               <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Verified Dispatch</span>
             </div>
             
-            <h1 className="text-4xl sm:text-6xl font-serif font-black mb-10 leading-[0.95] tracking-tighter italic">
+            <h1 className="text-4xl sm:text-6xl font-serif font-black mb-6 leading-[0.95] tracking-tighter italic">
               {blog.title}
             </h1>
+
+            {blog.tags && blog.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-10">
+                {blog.tags.map((tag, idx) => (
+                  <span key={idx} className="text-[9px] font-black uppercase tracking-widest text-secondary hover:text-white transition-colors cursor-default">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex flex-wrap items-center gap-8 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
               <div className="flex items-center gap-2">
@@ -106,10 +163,10 @@ export default function BlogDetails() {
                 {blog.author}
               </div>
               <button 
-                onClick={handleShare}
-                className="flex items-center gap-2 text-white hover:italic transition-all"
+                onClick={() => setShowShareModal(true)}
+                className="flex items-center gap-2 text-white hover:italic transition-all group"
               >
-                <Share2 size={16} />
+                <Share2 size={16} className="group-hover:rotate-12 transition-transform" />
                 Share Dispatch
               </button>
             </div>
@@ -138,6 +195,32 @@ export default function BlogDetails() {
               prose-a:text-primary prose-a:underline hover:prose-a:italic">
               <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{blog.content}</ReactMarkdown>
             </div>
+
+            {blog.contentImages && blog.contentImages.length > 0 && (
+              <div className="mt-12 space-y-12">
+                {blog.contentImages.map((img, idx) => (
+                  <figure 
+                    key={idx} 
+                    className={`flex flex-col gap-3 ${
+                      img.alignment === 'left' ? 'sm:w-1/2 sm:float-left sm:mr-8 sm:mb-6' : 
+                      img.alignment === 'right' ? 'sm:w-1/2 sm:float-right sm:ml-8 sm:mb-6' : 
+                      img.alignment === 'center' ? 'sm:max-w-2xl mx-auto' : 
+                      'w-full'
+                    }`}
+                  >
+                    <div className="border-2 border-black overflow-hidden shadow-[4px_4px_0_0_rgba(0,0,0,0.05)]">
+                      <img src={img.url} alt={img.caption || 'Article detail'} className="w-full object-cover" />
+                    </div>
+                    {img.caption && (
+                      <figcaption className="text-[10px] font-bold uppercase tracking-widest text-slate-500 text-center italic">
+                        {img.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+                <div className="clear-both" />
+              </div>
+            )}
 
             {blog.galleryImages && blog.galleryImages.length > 0 && (
               <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -294,6 +377,135 @@ export default function BlogDetails() {
               </button>
             </div>
           </form>
+        </div>
+      </div>
+
+      {/* Share Modal */}
+      <AnimatePresence>
+        {showShareModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowShareModal(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative bg-editorial-bg border-4 border-black w-full max-w-lg p-0 overflow-hidden shadow-[20px_20px_0_0_rgba(0,0,0,0.3)]"
+            >
+              <div className="p-4 border-b-2 border-black flex justify-between items-center bg-primary text-white">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Official Dispatch Sharing</span>
+                <button onClick={() => setShowShareModal(false)}><X size={20} /></button>
+              </div>
+              
+              <div className="p-8">
+                <h3 className="text-xl font-serif font-black mb-8 italic">Choose Share Node_</h3>
+                
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <button 
+                    onClick={() => handleShare('whatsapp')}
+                    className="flex flex-col items-center justify-center gap-3 p-6 border-2 border-black hover:bg-green-500 hover:text-white transition-all group"
+                  >
+                    <Send size={24} className="group-hover:rotate-12 transition-transform" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
+                  </button>
+                  <button 
+                    onClick={() => handleShare('instagram')}
+                    className="flex flex-col items-center justify-center gap-3 p-6 border-2 border-black hover:bg-pink-600 hover:text-white transition-all group"
+                  >
+                    <Instagram size={24} className="group-hover:rotate-12 transition-transform" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Instagram</span>
+                  </button>
+                </div>
+
+                <div className="border-t-2 border-black pt-8">
+                  <button 
+                    disabled={isGeneratingShare}
+                    onClick={generateShareImage}
+                    className="w-full bg-black text-white p-5 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all disabled:opacity-50"
+                  >
+                    {isGeneratingShare ? (
+                      <span className="animate-pulse">Synthesizing Preview...</span>
+                    ) : (
+                      <>
+                        <Download size={20} /> Generate Share Preview Image
+                      </>
+                    )}
+                  </button>
+                  <p className="text-[9px] font-bold text-center mt-4 opacity-40 uppercase tracking-widest italic">
+                    Downloads an optimized story-size preview with branding.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Hidden Share Card Template (Invisible but in DOM for Capture) */}
+      <div className="fixed -left-[2000px] top-0 pointer-events-none overflow-hidden">
+        <div 
+          ref={shareCardRef}
+          className="w-[1080px] h-[1920px] bg-editorial-bg p-20 flex flex-col justify-between border-[40px] border-black relative"
+        >
+          {/* Logo/Branding Header */}
+          <div className="flex items-center justify-between border-b-[8px] border-black pb-12">
+            <div>
+              <h1 className="text-[80px] font-serif font-black italic tracking-tighter leading-none">RollFetch</h1>
+              <span className="text-[24px] font-black uppercase tracking-[0.4em] text-primary">India's Student Journal</span>
+            </div>
+            <div className="text-right">
+              <span className="text-[20px] font-black uppercase tracking-widest opacity-40 italic">#OfficialDispatch</span>
+            </div>
+          </div>
+
+          <div className="flex-grow flex flex-col justify-center py-20">
+            <div className="bg-secondary text-primary inline-block px-8 py-3 text-[28px] font-black uppercase tracking-[0.3em] border-[4px] border-black mb-12 self-start shadow-[12px_12px_0_0_rgba(0,0,0,1)]">
+              {blog.category}
+            </div>
+            
+            <h2 className="text-[110px] font-serif font-black italic italic leading-[0.9] tracking-tighter mb-16 text-black">
+              {blog.title}
+            </h2>
+
+            <div className="w-full h-[600px] border-[8px] border-black shadow-[30px_30px_0_0_rgba(0,0,0,0.1)] mb-12 overflow-hidden">
+              <img src={blog.imageUrl} className="w-full h-full object-cover" crossOrigin="anonymous" />
+            </div>
+
+            <p className="text-[42px] font-bold text-editorial-text/70 leading-[1.4] line-clamp-3 mb-12 italic border-l-[12px] border-primary pl-8">
+              "{blog.excerpt}"
+            </p>
+
+            <div className="flex flex-wrap gap-4">
+              {blog.tags?.slice(0, 4).map((tag, idx) => (
+                <span key={idx} className="text-[28px] font-black uppercase tracking-widest text-primary">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer Branding */}
+          <div className="border-t-[8px] border-black pt-12 flex justify-between items-end">
+            <div>
+              <p className="text-[24px] font-black uppercase tracking-widest text-slate-400 mb-2">Authenticated By</p>
+              <p className="text-[32px] font-black uppercase tracking-widest">{blog.author}</p>
+            </div>
+            <div className="text-right flex flex-col items-end">
+              <div className="bg-primary px-8 py-4 text-white text-[28px] font-black uppercase tracking-widest">
+                VERIFIED_STORY
+              </div>
+              <p className="text-[20px] font-bold mt-4 opacity-40 uppercase tracking-widest">rollfetch.vercel.app</p>
+            </div>
+          </div>
+
+          {/* Decorative Corner Elements */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-primary opacity-5" style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-secondary opacity-20" style={{ clipPath: 'polygon(0 0, 0 100%, 100% 100%)' }} />
         </div>
       </div>
     </div>

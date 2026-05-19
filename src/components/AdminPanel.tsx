@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useBlogs } from '../context/BlogContext';
-import { Blog, WriterApplication } from '../types';
+import { Blog, WriterApplication, BlogImage } from '../types';
 import { 
   Plus, Trash2, Edit3, X, Save, Star, Bold, Italic, 
   List, Heading2, Link as LinkIcon, Eye, Code, 
-  Settings, Users, FileText, Check, Ban, ExternalLink, Image as ImageIcon
+  Settings, Users, FileText, Check, Ban, ExternalLink, Image as ImageIcon,
+  Sparkles, AlignLeft, AlignCenter, AlignRight, Maximize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
@@ -91,10 +92,57 @@ export default function AdminPanel() {
       author: 'Admin',
       isFeatured: false,
       galleryImages: [],
+      contentImages: [],
+      tags: [],
       ctaButtons: [],
       date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
       imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80'
     });
+  };
+
+  const addContentImage = () => {
+    setCurrentBlog(prev => ({
+      ...prev,
+      contentImages: [...(prev.contentImages || []), { url: '', caption: '', alignment: 'center' }]
+    }));
+  };
+
+  const updateContentImage = (index: number, field: keyof BlogImage, value: string) => {
+    const newImages = [...(currentBlog.contentImages || [])];
+    newImages[index] = { ...newImages[index], [field]: value };
+    setCurrentBlog(prev => ({ ...prev, contentImages: newImages }));
+  };
+
+  const removeContentImage = (index: number) => {
+    setCurrentBlog(prev => ({
+      ...prev,
+      contentImages: prev.contentImages?.filter((_, i) => i !== index)
+    }));
+  };
+
+  const generateTags = async () => {
+    if (!currentBlog.title || !currentBlog.content) {
+      alert("Please provide title and content first.");
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/generate-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: currentBlog.title, content: currentBlog.content })
+      });
+      
+      const data = await response.json();
+      if (data.tags) {
+        setCurrentBlog(prev => ({ ...prev, tags: [...new Set([...(prev.tags || []), ...data.tags])] }));
+      }
+    } catch (error) {
+      console.error("Tag generation failed:", error);
+      alert("Failed to generate tags. Using fallback.");
+      const fallback = currentBlog.category ? [`#${currentBlog.category}`, '#RollFetch'] : ['#RollFetch'];
+      setCurrentBlog(prev => ({ ...prev, tags: [...new Set([...(prev.tags || []), ...fallback])] }));
+    }
   };
 
   const addGalleryImage = () => {
@@ -366,6 +414,92 @@ export default function AdminPanel() {
                       />
                       <div className="mt-2 text-[9px] uppercase font-bold opacity-30 text-right">
                         Characters: {currentBlog.excerpt?.length || 0}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-primary">SEO Hashtags</label>
+                        <button onClick={generateTags} className="text-[9px] font-black uppercase tracking-widest text-primary flex items-center gap-1 group">
+                          <Sparkles size={12} className="group-hover:rotate-12 transition-transform" /> Auto-Suggest
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {currentBlog.tags?.map((tag, idx) => (
+                          <span key={idx} className="bg-editorial-aside border border-black/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                            {tag}
+                            <button onClick={() => setCurrentBlog(prev => ({ ...prev, tags: prev.tags?.filter((_, i) => i !== idx) }))}>
+                              <X size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="#addtag"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const val = (e.target as HTMLInputElement).value.trim();
+                              if (val) {
+                                const tag = val.startsWith('#') ? val : `#${val}`;
+                                setCurrentBlog(prev => ({ ...prev, tags: [...new Set([...(prev.tags || []), tag])] }));
+                                (e.target as HTMLInputElement).value = '';
+                              }
+                            }
+                          }}
+                          className="flex-grow bg-editorial-aside border-2 border-primary/10 p-3 text-[10px] font-bold focus:border-primary outline-none text-editorial-text"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-primary">Dynamic Section Images</label>
+                        <button onClick={addContentImage} className="text-[9px] font-black uppercase tracking-widest text-primary flex items-center gap-1">
+                          <Plus size={12} /> Add Layout Image
+                        </button>
+                      </div>
+                      <div className="space-y-6">
+                        {currentBlog.contentImages?.map((img, index) => (
+                          <div key={index} className="p-4 border-2 border-black/5 bg-editorial-aside space-y-4">
+                            <div className="flex gap-2">
+                              <input 
+                                type="text" 
+                                value={img.url}
+                                onChange={e => updateContentImage(index, 'url', e.target.value)}
+                                className="flex-grow bg-editorial-bg border-2 border-primary/10 p-3 text-[10px] font-bold focus:border-primary outline-none text-editorial-text"
+                                placeholder="Section Image URL..."
+                              />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex border-2 border-black/5 rounded overflow-hidden">
+                                {(['left', 'center', 'right', 'full'] as const).map(align => (
+                                  <button
+                                    key={align}
+                                    onClick={() => updateContentImage(index, 'alignment', align)}
+                                    className={`p-2 transition-colors ${img.alignment === align ? 'bg-primary text-white' : 'bg-editorial-bg text-slate-400 hover:text-black'}`}
+                                    title={`Align ${align}`}
+                                  >
+                                    {align === 'left' && <AlignLeft size={14} />}
+                                    {align === 'center' && <AlignCenter size={14} />}
+                                    {align === 'right' && <AlignRight size={14} />}
+                                    {align === 'full' && <Maximize2 size={14} />}
+                                  </button>
+                                ))}
+                              </div>
+                              <button onClick={() => removeContentImage(index)} className="text-[9px] font-black uppercase text-red-500">Remove</button>
+                            </div>
+                            <input 
+                              type="text" 
+                              value={img.caption || ''}
+                              onChange={e => updateContentImage(index, 'caption', e.target.value)}
+                              className="w-full bg-editorial-bg border-2 border-primary/10 p-3 text-[10px] font-mono outline-none text-editorial-text"
+                              placeholder="Image Caption (Optional)..."
+                            />
+                          </div>
+                        ))}
                       </div>
                     </div>
 

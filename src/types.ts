@@ -26,6 +26,12 @@ export interface AppConfig {
   logoHeight?: number;
 }
 
+export interface BlogImage {
+  url: string;
+  caption?: string;
+  alignment: 'left' | 'right' | 'center' | 'full';
+}
+
 export interface Blog {
   id: string;
   title: string;
@@ -37,6 +43,8 @@ export interface Blog {
   author: string;
   imageUrl: string;
   galleryImages?: string[];
+  contentImages?: BlogImage[];
+  tags?: string[];
   officialLinks?: { label: string; url: string }[];
   ctaButtons?: { label: string; url: string; variant?: 'primary' | 'secondary' }[];
   isFeatured?: boolean;
