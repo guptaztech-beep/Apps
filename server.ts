@@ -54,19 +54,17 @@ async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: "spa",
+      appType: "custom", // Changed to custom to handle fallback manually and reliably
     });
     app.use(vite.middlewares);
     
-    // Explicit fallback for SPA in dev mode if vite middleware misses it
-    app.use('*', async (req, res, next) => {
+    app.get("*", async (req, res, next) => {
       const url = req.originalUrl;
-      if (url.startsWith('/api')) return next();
+      if (url.startsWith("/api")) return next();
       
       try {
-        let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
-        template = await vite.transformIndexHtml(url, template);
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+        const template = await vite.transformIndexHtml(url, fs.readFileSync(path.resolve(process.cwd(), "index.html"), "utf-8"));
+        res.status(200).set({ "Content-Type": "text/html" }).end(template);
       } catch (e) {
         vite.ssrFixStacktrace(e as Error);
         next(e);
