@@ -9,6 +9,7 @@ import AdminPanel from './components/AdminPanel';
 import Careers from './pages/Careers';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import EditorialPolicy from './pages/EditorialPolicy';
+import Sitemap from './pages/Sitemap';
 
 function Home() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
                 <Route path="/careers" element={<Careers />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/editorial-policy" element={<EditorialPolicy />} />
+                <Route path="/sitemap" element={<Sitemap />} />
               </Routes>
             </main>
             <Footer />

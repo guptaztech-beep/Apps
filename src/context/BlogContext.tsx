@@ -54,14 +54,45 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
     });
 
     const q = query(collection(db, 'blogs'), orderBy('date', 'desc'));
-    const unsubBlogs = onSnapshot(q, (snapshot) => {
-      const blogData = snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
-      } as Blog));
-      setBlogs(blogData);
-      setLoading(false);
+    const unsubBlogs = onSnapshot(q, async (snapshot) => {
+      if (snapshot.empty) {
+        console.log("Firestore blogs collection is empty. Seeding defaults...");
+        setBlogs(BLOGS);
+        setLoading(false);
+        try {
+          // Automatic database seeding so the Firestore gets populated on start
+          for (const item of BLOGS) {
+            await setDoc(doc(db, 'blogs', item.id), {
+              title: item.title,
+              slug: item.slug,
+              category: item.category,
+              date: item.date,
+              author: item.author,
+              imageUrl: item.imageUrl,
+              excerpt: item.excerpt,
+              content: item.content,
+              isFeatured: item.isFeatured || false,
+              reactions: item.reactions || { like: 0, informative: 0, helpful: 0 },
+              comments: item.comments || [],
+              tags: item.tags || []
+            });
+          }
+        } catch (err) {
+          console.error("Failed to seed default blogs into Firestore:", err);
+        }
+      } else {
+        const blogData = snapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data() 
+        } as Blog));
+        setBlogs(blogData);
+        setLoading(false);
+      }
     }, (error) => {
+      // In case of permission errors, fallback to our offline predefined content so the application runs perfectly
+      console.warn("Firestore snapshot failed, falling back to static BLOGS entries:", error);
+      setBlogs(BLOGS);
+      setLoading(false);
       handleFirestoreError(error, OperationType.LIST, 'blogs');
     });
 

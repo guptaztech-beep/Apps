@@ -80,6 +80,7 @@ export default function Footer() {
             <Link to="/admin" className="hover:text-white transition-colors">Admin Desk</Link>
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link to="/editorial-policy" className="hover:text-white transition-colors">Editorial Policy</Link>
+            <Link to="/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
             <a href="#" className="hover:text-white transition-colors">Contact</a>
           </div>
         </div>

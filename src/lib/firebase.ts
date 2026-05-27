@@ -59,5 +59,5 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     path
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  // Safely log and do not throw to prevent blank screen crashes in React
 }
