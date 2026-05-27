@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Calendar, User, Share2, ExternalLink, ArrowRight, 
   MessageSquare, ThumbsUp, Lightbulb, CheckCircle2, Download,
-  Instagram, Send, X
+  Instagram, Send, X, Copy, Check
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
@@ -63,6 +63,13 @@ export default function BlogDetails() {
   const [isGeneratingShare, setIsGeneratingShare] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const generateShareImage = async () => {
     if (!shareCardRef.current) return;
@@ -428,20 +435,33 @@ export default function BlogDetails() {
               <div className="p-8">
                 <h3 className="text-xl font-serif font-black mb-8 italic">Choose Share Node_</h3>
                 
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-3 gap-3 mb-8">
                   <button 
                     onClick={() => handleShare('whatsapp')}
-                    className="flex flex-col items-center justify-center gap-3 p-6 border-2 border-black hover:bg-green-500 hover:text-white transition-all group"
+                    className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-black hover:bg-green-500 hover:text-white transition-all group cursor-pointer"
                   >
-                    <Send size={24} className="group-hover:rotate-12 transition-transform" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
+                    <Send size={20} className="group-hover:rotate-12 transition-transform" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-center">WhatsApp</span>
                   </button>
                   <button 
                     onClick={() => handleShare('instagram')}
-                    className="flex flex-col items-center justify-center gap-3 p-6 border-2 border-black hover:bg-pink-600 hover:text-white transition-all group"
+                    className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-black hover:bg-pink-600 hover:text-white transition-all group cursor-pointer"
                   >
-                    <Instagram size={24} className="group-hover:rotate-12 transition-transform" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Instagram</span>
+                    <Instagram size={20} className="group-hover:rotate-12 transition-transform" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-center">Instagram</span>
+                  </button>
+                  <button 
+                    onClick={handleCopyLink}
+                    className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-black hover:bg-primary hover:text-white transition-all group cursor-pointer"
+                  >
+                    {copied ? (
+                      <Check size={20} className="text-secondary" />
+                    ) : (
+                      <Copy size={20} className="group-hover:scale-110 transition-transform" />
+                    )}
+                    <span className="text-[9px] font-black uppercase tracking-widest text-center animate-pulse">
+                      {copied ? 'Copied!' : 'Copy Link'}
+                    </span>
                   </button>
                 </div>
 

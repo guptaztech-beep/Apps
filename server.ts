@@ -67,8 +67,9 @@ async function startServer() {
         }
       }
 
+      const proto = req.get('x-forwarded-proto') || req.protocol || 'https';
       const host = req.get('host') || 'ais-pre-nvbc3pcyvnblr6z3lt6qn7-7884261732.asia-southeast1.run.app';
-      const origin = `${req.protocol}://${host}`;
+      const origin = `${proto}://${host}`;
 
       let blogsList: any[] = [];
       try {
@@ -132,7 +133,7 @@ async function startServer() {
   });
 
   // Determine production mode reliably
-  const isProd = process.env.NODE_ENV === "production" || fs.existsSync(path.resolve(process.cwd(), 'dist/index.html'));
+  const isProd = process.env.NODE_ENV === "production" || (!process.argv.slice(1).some(arg => arg.endsWith('server.ts')) && fs.existsSync(path.resolve(process.cwd(), 'dist/index.html')));
 
   // Vite middleware for development vs static serve for production
   if (isProd) {
@@ -225,8 +226,8 @@ async function startServer() {
     // SPA fallback
     app.get('*', (req, res) => {
       // Exclude API and physical files (that would have extension)
-      if (req.url.startsWith('/api')) {
-        return res.status(404).json({ error: 'Not Found' });
+      if (req.path.startsWith('/api') || req.path.includes('.')) {
+        return res.status(404).end();
       }
       
       const indexPath = path.join(distPath, 'index.html');
@@ -250,6 +251,23 @@ async function startServer() {
       appType: "spa",
     });
     app.use(vite.middlewares);
+
+    // Development SPA Fallback
+    app.get('*', async (req, res, next) => {
+      // Exclude API and physical files (that would have extension)
+      if (req.path.startsWith('/api') || req.path.includes('.')) {
+        return next();
+      }
+      try {
+        const url = req.originalUrl;
+        const template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+        const html = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   }
 
   app.listen(PORT, "0.0.0.0", () => {
