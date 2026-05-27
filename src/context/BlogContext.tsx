@@ -106,6 +106,9 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
           ...doc.data() 
         } as WriterApplication));
         setApplications(appData);
+      }, (error) => {
+        console.warn("Applications snapshot failed:", error);
+        handleFirestoreError(error, OperationType.LIST, 'applications');
       });
     }
 
@@ -114,6 +117,8 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
       if (snapshot.exists()) {
         setConfig(snapshot.data() as AppConfig);
       }
+    }, (error) => {
+      console.warn("Config snapshot failed, using default styles:", error);
     });
 
     return () => {

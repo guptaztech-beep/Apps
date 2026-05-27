@@ -43,7 +43,7 @@ export default function Sitemap() {
               </Link>
 
               {categories.map(cat => (
-                <Link key={cat} to={`/category/${cat === 'All' ? '' : cat}`} className="group flex items-center justify-between p-4 bg-white border-2 border-black/5 hover:border-black transition-all">
+                <Link key={cat} to={cat === 'All' ? '/' : `/category/${cat}`} className="group flex items-center justify-between p-4 bg-white border-2 border-black/5 hover:border-black transition-all">
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-widest text-editorial-text">{cat} Category</h4>
                     <p className="text-[10px] opacity-60">Filtered Academic Reports ({blogs.filter(b => cat === 'All' || b.category === cat).length})</p>

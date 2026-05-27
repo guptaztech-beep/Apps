@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useBlogs } from '../context/BlogContext';
 import { Category } from '../types';
@@ -11,6 +11,12 @@ export default function BlogList() {
   const { categorySlug } = useParams<{ categorySlug: string }>();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<Category>((categorySlug as Category) || 'All');
+
+  // Multi-route state synchronization to solve frozen category links
+  useEffect(() => {
+    const value = (categorySlug as Category) || 'All';
+    setActiveCategory(value);
+  }, [categorySlug]);
 
   const categories = useMemo(() => {
     const cats = ['All', 'CBSE', 'NEET', 'How-To', 'Exam', 'Result'];

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import BlogList from './components/BlogList';
@@ -48,6 +48,8 @@ export default function App() {
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/editorial-policy" element={<EditorialPolicy />} />
                 <Route path="/sitemap" element={<Sitemap />} />
+                <Route path="/category" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
             <Footer />
