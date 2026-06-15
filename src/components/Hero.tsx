@@ -39,7 +39,28 @@ export default function Hero() {
 
   return (
     <div className="bg-editorial-bg text-editorial-text relative overflow-hidden border-b border-black">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row min-h-[600px]">
+      {/* Mobile-only background image (hidden on desktop) */}
+      <div className="absolute inset-0 md:hidden z-0 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentBlog.id}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 0.75, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+            className="absolute inset-0"
+          >
+            <img 
+              src={currentBlog.imageUrl} 
+              alt="" 
+              className="w-full h-full object-cover" 
+            />
+          </motion.div>
+        </AnimatePresence>
+        <div className="absolute inset-0 bg-editorial-bg opacity-45 md:opacity-0" />
+      </div>
+
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row min-h-[600px] relative z-10">
         {/* Left Side: Editorial Content */}
         <div className="flex-1 p-6 sm:p-12 md:border-r border-black flex flex-col justify-center relative z-10">
           <AnimatePresence mode="wait">
@@ -107,7 +128,7 @@ export default function Hero() {
         </div>
 
         {/* Right Side: Visual Accent */}
-        <div className="hidden md:block w-1/3 relative bg-editorial-aside overflow-hidden border-l border-black">
+        <div className="hidden md:block md:w-1/2 flex-shrink-0 relative bg-editorial-aside overflow-hidden border-l border-black">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentBlog.id}
@@ -115,7 +136,7 @@ export default function Hero() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.6 }}
-              className="absolute inset-0 mix-blend-multiply group"
+              className="absolute inset-0 group"
             >
               <img 
                 src={currentBlog.imageUrl} 
@@ -124,7 +145,7 @@ export default function Hero() {
               />
             </motion.div>
           </AnimatePresence>
-          <div className="absolute inset-0 bg-gradient-to-t from-editorial-aside via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
           
           <div className="absolute bottom-8 left-8 right-8 p-6 bg-editorial-bg border-2 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-white/5">
             <h4 className="text-[10px] uppercase tracking-widest font-black mb-3 border-b-2 border-primary pb-2">Verified Bulletin</h4>

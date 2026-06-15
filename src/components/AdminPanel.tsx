@@ -37,11 +37,13 @@ export default function AdminPanel() {
 
   const [logoUrl, setLogoUrl] = useState(config.logoUrl);
   const [logoHeight, setLogoHeight] = useState(config.logoHeight || 40);
+  const [productionDomain, setProductionDomain] = useState(config.productionDomain || '');
 
   useEffect(() => {
     setLogoUrl(config.logoUrl);
     setLogoHeight(config.logoHeight || 40);
-  }, [config.logoUrl, config.logoHeight]);
+    setProductionDomain(config.productionDomain || '');
+  }, [config.logoUrl, config.logoHeight, config.productionDomain]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-editorial-bg">
@@ -64,7 +66,7 @@ export default function AdminPanel() {
   );
 
   const handleUpdateLogo = async () => {
-    await updateConfig({ logoUrl, logoHeight });
+    await updateConfig({ logoUrl, logoHeight, productionDomain });
     alert("Brand assets updated successfully.");
   };
   const [currentBlog, setCurrentBlog] = useState<Partial<Blog>>({
@@ -809,6 +811,20 @@ export default function AdminPanel() {
                     />
                     <span className="text-xs font-mono font-black w-12 text-right">{logoHeight}px</span>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Production/Public Domain (For Shared Links)</label>
+                  <p className="text-[10px] text-slate-500 mb-4 italic leading-relaxed">
+                    Staging sandboxes are private can only be viewed by you. Put your live website domain here (e.g. <code className="font-mono text-primary font-bold">rollfetch.in</code> or <code className="font-mono text-primary font-bold">rollfetch.vercel.app</code>) to generate public, shareable links that work instantly for guests without requiring sign-in!
+                  </p>
+                  <input 
+                    type="text" 
+                    value={productionDomain}
+                    onChange={e => setProductionDomain(e.target.value)}
+                    placeholder="https://rollfetch.vercel.app"
+                    className="w-full bg-editorial-aside border-2 border-primary/10 p-4 text-sm font-mono focus:border-primary outline-none transition-all"
+                  />
                 </div>
 
                 <div>

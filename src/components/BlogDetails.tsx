@@ -19,7 +19,7 @@ import remarkBreaks from 'remark-breaks';
 export default function BlogDetails() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { blogs, addComment, addReaction, loading } = useBlogs();
+  const { blogs, addComment, addReaction, loading, config } = useBlogs();
   const blog = blogs.find(b => b.slug === slug);
   
   const [commentName, setCommentName] = useState('');
@@ -65,8 +65,25 @@ export default function BlogDetails() {
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
+  const getShareUrl = () => {
+    if (config?.productionDomain) {
+      let base = config.productionDomain.trim();
+      if (!/^https?:\/\//i.test(base)) {
+        base = `https://${base}`;
+      }
+      return `${base.replace(/\/$/, '')}/blog/${blog.slug}`;
+    }
+    
+    let currentUrl = window.location.href;
+    if (currentUrl.includes('ais-dev-')) {
+      currentUrl = currentUrl.replace('ais-dev-', 'ais-pre-');
+    }
+    return currentUrl;
+  };
+
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const url = getShareUrl();
+    navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -94,7 +111,7 @@ export default function BlogDetails() {
 
   const handleShare = (platform: 'whatsapp' | 'instagram' | 'general') => {
     const text = `Check this official update: ${blog.title}\n\n`;
-    const url = window.location.href;
+    const url = getShareUrl();
     
     if (platform === 'whatsapp') {
       window.open(`https://wa.me/?text=${encodeURIComponent(text + url)}`, '_blank');
@@ -464,6 +481,12 @@ export default function BlogDetails() {
                     </span>
                   </button>
                 </div>
+
+                {(!config?.productionDomain && (window.location.hostname.includes('run.app') || window.location.hostname.includes('localhost'))) && (
+                  <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 border-l-4 border-amber-500 text-[9px] text-amber-800 dark:text-amber-200 leading-normal uppercase font-bold tracking-wider">
+                    ⚠️ DEVELOPMENT SANDBOX URL: Staging links are private to your workspace. Set your "Production Domain" in Editor Desk settings to generate universal public links that work instantly for guests!
+                  </div>
+                )}
 
                 <div className="border-t-2 border-black pt-8">
                   <button 

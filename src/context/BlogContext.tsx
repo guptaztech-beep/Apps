@@ -42,7 +42,7 @@ const ADMIN_EMAIL = 'guptaztech@gmail.com';
 export function BlogProvider({ children }: { children: React.ReactNode }) {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [applications, setApplications] = useState<WriterApplication[]>([]);
-  const [config, setConfig] = useState<AppConfig>({ logoUrl: '', logoHeight: 40 });
+  const [config, setConfig] = useState<AppConfig>({ logoUrl: '', logoHeight: 40, productionDomain: '' });
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
