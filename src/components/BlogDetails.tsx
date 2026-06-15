@@ -75,7 +75,71 @@ export default function BlogDetails() {
     const RawMarkdown: any = ReactMarkdown;
     const Component = RawMarkdown?.default || RawMarkdown;
     if (!Component) return <pre className="whitespace-pre-wrap">{content}</pre>;
-    return <Component remarkPlugins={safePlugins}>{content}</Component>;
+    return (
+      <Component 
+        remarkPlugins={safePlugins}
+        components={{
+          h1: ({ children, ...props }: any) => <h1 className="text-2xl sm:text-3xl font-sans font-extrabold text-slate-900 mt-10 mb-4 tracking-tight leading-snug" {...props}>{children}</h1>,
+          h2: ({ children, ...props }: any) => <h2 className="text-xl sm:text-2xl font-sans font-bold text-slate-800 mt-8 mb-3 tracking-tight leading-snug pb-1 border-b border-slate-100" {...props}>{children}</h2>,
+          h3: ({ children, ...props }: any) => <h3 className="text-lg sm:text-xl font-sans font-semibold text-slate-800 mt-6 mb-2 tracking-tight" {...props}>{children}</h3>,
+          p: ({ children, ...props }: any) => <p className="text-base sm:text-[17px] text-slate-700/90 leading-relaxed font-sans mb-6 last:mb-0" {...props}>{children}</p>,
+          blockquote: ({ children, ...props }: any) => (
+            <blockquote className="border-l-4 border-primary bg-secondary/15 px-6 py-4 my-8 font-serif italic text-slate-800 rounded-r shadow-sm" {...props}>
+              {children}
+            </blockquote>
+          ),
+          ul: ({ children, ...props }: any) => <ul className="list-disc pl-6 space-y-2 mb-6 font-sans text-slate-700/80 text-base sm:text-[17px] leading-relaxed" {...props}>{children}</ul>,
+          ol: ({ children, ...props }: any) => <ol className="list-decimal pl-6 space-y-2 mb-6 font-sans text-slate-700/80 text-base sm:text-[17px] leading-relaxed" {...props}>{children}</ol>,
+          li: ({ children, ...props }: any) => <li className="my-1.5 pl-1" {...props}>{children}</li>,
+          a: ({ children, href, ...props }: any) => (
+            <a 
+              href={href} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-primary font-bold underline underline-offset-4 decoration-2 hover:text-black transition-all rounded px-0.5 hover:bg-secondary/10" 
+              {...props}
+            >
+              {children}
+            </a>
+          ),
+          img: ({ src, alt, ...props }: any) => (
+            <span className="block my-8 max-w-full">
+              <span className="block overflow-hidden rounded-xl shadow-lg border border-slate-200">
+                <img src={src} alt={alt} className="w-full h-auto object-cover max-h-[500px]" referrerPolicy="no-referrer" {...props} />
+              </span>
+              {alt && (
+                <span className="block text-center text-xs font-bold uppercase tracking-widest text-slate-500 mt-3 italic">
+                  {alt}
+                </span>
+              )}
+            </span>
+          ),
+          hr: ({ ...props }: any) => <hr className="my-10 border-t border-slate-200" {...props} />,
+          pre: ({ children, ...props }: any) => (
+            <pre className="bg-slate-900 text-slate-100 p-5 rounded-xl overflow-x-auto font-mono text-sm leading-relaxed my-6 shadow-md border border-slate-800" {...props}>
+              {children}
+            </pre>
+          ),
+          code: ({ children, className, ...props }: any) => {
+            const isInline = !className;
+            if (isInline) {
+              return (
+                <code className="bg-slate-100 text-rose-600 font-mono text-sm px-1.5 py-0.5 rounded border border-slate-200 font-semibold" {...props}>
+                  {children}
+                </code>
+              );
+            }
+            return (
+              <code className="font-mono text-sm leading-relaxed block" {...props}>
+                {children}
+              </code>
+            );
+          }
+        }}
+      >
+        {content}
+      </Component>
+    );
   };
 
   useEffect(() => {
@@ -306,11 +370,7 @@ export default function BlogDetails() {
                 </figure>
               ))}
 
-              <div className="markdown-body prose prose-slate dark:prose-invert max-w-none 
-                prose-p:text-base sm:prose-p:text-lg prose-p:leading-[1.8] prose-p:text-editorial-text
-                prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-editorial-aside prose-blockquote:p-6
-                prose-ul:list-disc prose-ol:list-decimal prose-li:text-editorial-text/80
-                prose-a:text-primary prose-a:underline hover:prose-a:italic">
+              <div className="markdown-body max-w-3xl mx-auto text-slate-700/90 leading-relaxed font-sans space-y-6 sm:space-y-8">
                 <MarkdownRenderer content={blog.content || ''} />
               </div>
               
@@ -354,44 +414,48 @@ export default function BlogDetails() {
             )}
 
             {blog.ctaButtons && blog.ctaButtons.length > 0 && (
-              <div className="mt-12 flex flex-col sm:flex-row gap-4">
-                {blog.ctaButtons.map((cta, idx) => (
-                  <a 
-                    key={idx}
-                    href={cta.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`flex-1 text-center py-5 text-sm font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${cta.variant === 'secondary' ? 'bg-secondary text-primary border-2 border-black/10' : 'bg-primary text-white hover:bg-black shadow-lg shadow-black/10'}`}
-                  >
-                    {cta.label} <ArrowRight size={18} />
-                  </a>
-                ))}
-              </div>
-            )}
-
-            {blog.officialLinks && (
-              <div className="mt-16 p-8 bg-editorial-aside border-l-8 border-black">
-                <h3 className="text-xs font-black text-black uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-                  <ExternalLink size={18} /> Official Source Links
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {blog.officialLinks.map((link, idx) => (
+              <div className="max-w-3xl mx-auto mt-12 pb-2">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  {blog.ctaButtons.map((cta, idx) => (
                     <a 
                       key={idx}
-                      href={link.url}
+                      href={cta.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-white border-2 border-black/10 hover:border-black px-6 py-4 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-between group"
+                      className={`flex-1 text-center py-5 text-sm font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${cta.variant === 'secondary' ? 'bg-secondary text-primary border-2 border-black/10' : 'bg-primary text-white hover:bg-black shadow-lg shadow-black/10'}`}
                     >
-                      {link.label} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                      {cta.label} <ArrowRight size={18} />
                     </a>
                   ))}
                 </div>
               </div>
             )}
+
+            {blog.officialLinks && (
+              <div className="max-w-3xl mx-auto mt-16">
+                <div className="p-8 bg-editorial-aside border-l-8 border-black">
+                  <h3 className="text-xs font-black text-black uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+                    <ExternalLink size={18} /> Official Source Links
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {blog.officialLinks.map((link, idx) => (
+                      <a 
+                        key={idx}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-white border-2 border-black/10 hover:border-black px-6 py-4 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-between group"
+                      >
+                        {link.label} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Reactions */}
-            <div className="mt-16 border-t-2 border-dashed border-black/10 pt-10">
+            <div className="max-w-3xl mx-auto mt-16 border-t-2 border-dashed border-black/10 pt-10">
               <h4 className="text-[10px] uppercase font-black tracking-widest mb-6">Reader Feedback</h4>
               <div className="flex flex-wrap gap-4">
                 <button 
