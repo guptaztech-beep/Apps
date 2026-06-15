@@ -6,6 +6,22 @@ interface BlogCardProps {
   blog: Blog;
 }
 
+const renderDate = (d: any) => {
+  if (!d) return '';
+  if (typeof d === 'string') return d;
+  if (d.toDate && typeof d.toDate === 'function') {
+    try {
+      return d.toDate().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    } catch (_) {}
+  }
+  if (d.seconds) {
+    try {
+      return new Date(d.seconds * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    } catch (_) {}
+  }
+  return String(d);
+};
+
 export default function BlogCard({ blog }: BlogCardProps) {
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,7 +52,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
         <div className="flex items-center gap-4 text-[9px] text-editorial-text opacity-50 font-black uppercase tracking-[0.3em] mb-4">
           <div className="flex items-center gap-1">
             <Calendar size={12} className="text-secondary" />
-            {blog.date}
+            {renderDate(blog.date)}
           </div>
           <div className="flex items-center gap-1 border-l border-primary/20 pl-4">
             <User size={12} className="text-secondary" />

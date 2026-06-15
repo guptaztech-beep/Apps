@@ -16,6 +16,22 @@ import { toPng } from 'html-to-image';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 
+const renderDate = (d: any) => {
+  if (!d) return '';
+  if (typeof d === 'string') return d;
+  if (d.toDate && typeof d.toDate === 'function') {
+    try {
+      return d.toDate().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    } catch (_) {}
+  }
+  if (d.seconds) {
+    try {
+      return new Date(d.seconds * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    } catch (_) {}
+  }
+  return String(d);
+};
+
 export default function BlogDetails() {
   const { slug: rawSlug } = useParams<{ slug: string }>();
   // Safe cleanup: handle trailing slash and trim extra whitespace cleanly
@@ -28,6 +44,34 @@ export default function BlogDetails() {
   const [commentName, setCommentName] = useState('');
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<Comment[]>([]);
+
+  const [safePlugins, setSafePlugins] = useState<any[]>([]);
+
+  useEffect(() => {
+    const plugins = [];
+    if (remarkGfm) {
+      if (typeof remarkGfm === 'function') {
+        plugins.push(remarkGfm);
+      } else if ((remarkGfm as any).default && typeof (remarkGfm as any).default === 'function') {
+        plugins.push((remarkGfm as any).default);
+      }
+    }
+    if (remarkBreaks) {
+      if (typeof remarkBreaks === 'function') {
+        plugins.push(remarkBreaks);
+      } else if ((remarkBreaks as any).default && typeof (remarkBreaks as any).default === 'function') {
+        plugins.push((remarkBreaks as any).default);
+      }
+    }
+    setSafePlugins(plugins);
+  }, []);
+
+  const MarkdownRenderer = ({ content }: { content: string }) => {
+    const RawMarkdown: any = ReactMarkdown;
+    const Component = RawMarkdown?.default || RawMarkdown;
+    if (!Component) return <pre className="whitespace-pre-wrap">{content}</pre>;
+    return <Component remarkPlugins={safePlugins}>{content}</Component>;
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -209,7 +253,7 @@ export default function BlogDetails() {
             <div className="flex flex-wrap items-center gap-8 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
               <div className="flex items-center gap-2">
                 <Calendar size={16} className="text-secondary" />
-                {blog.date}
+                {renderDate(blog.date)}
               </div>
               <div className="flex items-center gap-2">
                 <User size={16} className="text-secondary" />
@@ -266,7 +310,7 @@ export default function BlogDetails() {
                 prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-editorial-aside prose-blockquote:p-6
                 prose-ul:list-disc prose-ol:list-decimal prose-li:text-editorial-text/80
                 prose-a:text-primary prose-a:underline hover:prose-a:italic">
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{blog.content}</ReactMarkdown>
+                <MarkdownRenderer content={blog.content || ''} />
               </div>
               
               <div className="clear-both" />
@@ -401,7 +445,7 @@ export default function BlogDetails() {
                     {rb.title}
                   </h4>
                   <div className="flex items-center justify-between opacity-40 group-hover:opacity-100 transition-opacity border-t border-black/5 pt-4">
-                    <span className="text-[9px] font-black uppercase tracking-widest">{rb.date}</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest">{renderDate(rb.date)}</span>
                     <div className="flex items-center gap-1 text-primary font-black text-[9px] uppercase tracking-widest">
                       Read <ArrowRight size={10} />
                     </div>
@@ -423,7 +467,7 @@ export default function BlogDetails() {
               <div key={comment.id} className="bg-editorial-bg border-2 border-primary/20 p-6 relative shadow-[4px_4px_0_0_rgba(0,0,0,0.05)]">
                 <div className="flex justify-between items-center mb-4 border-b border-primary/10 pb-2">
                   <span className="text-[10px] font-black uppercase text-primary tracking-widest">{comment.author}</span>
-                  <span className="text-[9px] font-bold text-slate-400">{comment.date}</span>
+                  <span className="text-[9px] font-bold text-slate-400">{renderDate(comment.date)}</span>
                 </div>
                 <p className="text-sm font-medium text-editorial-text opacity-80 leading-relaxed italic">"{comment.text}"</p>
               </div>
