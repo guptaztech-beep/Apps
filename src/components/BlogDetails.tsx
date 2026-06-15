@@ -45,6 +45,11 @@ export default function BlogDetails() {
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<Comment[]>([]);
 
+  const [isGeneratingShare, setIsGeneratingShare] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
+
   const [safePlugins, setSafePlugins] = useState<any[]>([]);
 
   useEffect(() => {
@@ -107,10 +112,6 @@ export default function BlogDetails() {
     );
   }
 
-  const [isGeneratingShare, setIsGeneratingShare] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const shareCardRef = useRef<HTMLDivElement>(null);
-  const [copied, setCopied] = useState(false);
 
   const getShareUrl = () => {
     if (config?.productionDomain) {
