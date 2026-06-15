@@ -17,10 +17,13 @@ import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 
 export default function BlogDetails() {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug: rawSlug } = useParams<{ slug: string }>();
+  // Safe cleanup: handle trailing slash and trim extra whitespace cleanly
+  const slug = rawSlug?.replace(/\/$/, '')?.trim() || "";
   const navigate = useNavigate();
   const { blogs, addComment, addReaction, loading, config } = useBlogs();
-  const blog = blogs.find(b => b.slug === slug);
+  // Case-insensitive, trimmed matching to prevent direct link opening issues
+  const blog = blogs.find(b => b.slug?.toLowerCase()?.trim() === slug.toLowerCase());
   
   const [commentName, setCommentName] = useState('');
   const [commentText, setCommentText] = useState('');

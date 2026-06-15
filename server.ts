@@ -56,12 +56,14 @@ async function startServer() {
       const configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
       let projectId = "gen-lang-client-0294842239";
       let databaseId = "(default)";
+      let apiKey = "";
       
       if (fs.existsSync(configPath)) {
         try {
           const configObj = JSON.parse(fs.readFileSync(configPath, "utf-8"));
           projectId = configObj.projectId || projectId;
           databaseId = configObj.firestoreDatabaseId || databaseId;
+          apiKey = configObj.apiKey || "";
         } catch (e) {
           console.error("Failed to parse firebase configuration for sitemap:", e);
         }
@@ -73,8 +75,14 @@ async function startServer() {
 
       let blogsList: any[] = [];
       try {
-        const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents/blogs?pageSize=100`;
-        const firestoreRes = await fetch(firestoreUrl);
+        const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents/blogs?pageSize=100${apiKey ? `&key=${apiKey}` : ""}`;
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+        const firestoreRes = await fetch(firestoreUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
         if (firestoreRes.ok) {
           const data = await firestoreRes.json();
           if (data.documents && data.documents.length > 0) {
@@ -142,7 +150,7 @@ async function startServer() {
     
     // Dynamic SEO HTML Injection for single blog posts
     app.get('/blog/:slug', async (req, res) => {
-      const slug = req.params.slug;
+      const slug = req.params.slug?.replace(/\/$/, '') || "";
       const indexPath = path.resolve(distPath, 'index.html');
       
       if (!fs.existsSync(indexPath)) {
@@ -155,11 +163,13 @@ async function startServer() {
       const configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
       let projectId = "gen-lang-client-0294842239";
       let databaseId = "(default)";
+      let apiKey = "";
       if (fs.existsSync(configPath)) {
         try {
           const configObj = JSON.parse(fs.readFileSync(configPath, "utf-8"));
           projectId = configObj.projectId || projectId;
           databaseId = configObj.firestoreDatabaseId || databaseId;
+          apiKey = configObj.apiKey || "";
         } catch (e) {
           // ignore
         }
@@ -168,7 +178,11 @@ async function startServer() {
       // Query single document by slug using standard runQuery on Google API
       let blogPost: any = null;
       try {
-        const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents:runQuery`;
+        const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents:runQuery${apiKey ? `?key=${apiKey}` : ""}`;
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
+
         const response = await fetch(firestoreUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -184,8 +198,10 @@ async function startServer() {
               },
               limit: 1
             }
-          })
+          }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const results = await response.json();
