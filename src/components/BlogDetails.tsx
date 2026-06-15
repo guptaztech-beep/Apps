@@ -74,18 +74,44 @@ export default function BlogDetails() {
       return `${base.replace(/\/$/, '')}/blog/${blog.slug}`;
     }
     
-    let currentUrl = window.location.href;
-    if (currentUrl.includes('ais-dev-')) {
-      currentUrl = currentUrl.replace('ais-dev-', 'ais-pre-');
+    let origin = window.location.origin;
+    if (origin.includes('ais-dev-')) {
+      origin = origin.replace('ais-dev-', 'ais-pre-');
     }
-    return currentUrl;
+    return `${origin}/blog/${blog.slug}`;
   };
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     const url = getShareUrl();
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // Fallback for older browsers or sandboxed iframes without secure clipboard access
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.warn('Fallback copy mechanism triggered', err);
+      // Select manual input fallback (which we will render in the modal below)
+      const inputEl = document.getElementById('share-link-input') as HTMLInputElement;
+      if (inputEl) {
+        inputEl.select();
+        document.execCommand('copy');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        alert(`Copy failed. Please manually select and copy the URL below:\n\n${url}`);
+      }
+    }
   };
 
   const generateShareImage = async () => {
@@ -487,6 +513,35 @@ export default function BlogDetails() {
                     ⚠️ DEVELOPMENT SANDBOX URL: Staging links are private to your workspace. Set your "Production Domain" in Editor Desk settings to generate universal public links that work instantly for guests!
                   </div>
                 )}
+
+                <div className="mb-8">
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-3 opacity-60">Verified Link URL</label>
+                  <div className="flex gap-2">
+                    <input 
+                      id="share-link-input"
+                      type="text" 
+                      readOnly 
+                      value={getShareUrl()} 
+                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                      className="flex-grow bg-editorial-aside border-2 border-black p-4 text-[11px] font-mono outline-none text-editorial-text select-all"
+                    />
+                    <button 
+                      onClick={handleCopyLink}
+                      className="bg-black text-white px-6 font-black uppercase tracking-wider text-[10px] hover:bg-primary transition-all shrink-0 cursor-pointer"
+                    >
+                      {copied ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider italic">
+                    {window.location.hostname.includes('ais-dev-') ? (
+                      <span className="text-primary font-black">
+                        ⚠️ NOTE: Automatically routing to public "ais-pre-" server so guests can open it!
+                      </span>
+                    ) : (
+                      "Public link ready for distribution."
+                    )}
+                  </p>
+                </div>
 
                 <div className="border-t-2 border-black pt-8">
                   <button 
