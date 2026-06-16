@@ -14,7 +14,7 @@ service cloud.firestore {
     function isAdmin() {
       // For this app, only the owner/guptaztech is admin
       return isSignedIn() && (
-        request.auth.token.email == 'guptaztech@gmail.com' && request.auth.token.email_verified == true
+        request.auth.token.email == 'guptaztech@gmail.com'
       );
     }
 
@@ -54,14 +54,19 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
-    // Applications: Anyone can create (pending), Admin can read/update/delete, Owner can read
+    // Applications: Anyone can create/update (pending) as owner, Admin can read/update/delete all
     match /applications/{appId} {
-      allow create: if request.resource.data.status == 'pending' 
-                   && request.resource.data.name is string 
-                   && request.resource.data.comments is string
-                   && request.resource.data.name.size() < 200;
+      allow create, update: if isSignedIn() && (
+        isAdmin() || (
+          appId == request.auth.uid &&
+          request.resource.data.status == 'pending' &&
+          request.resource.data.name is string &&
+          request.resource.data.comments is string &&
+          request.resource.data.name.size() < 200
+        )
+      );
       allow read: if isAdmin() || (isSignedIn() && appId == request.auth.uid);
-      allow update, delete: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // Config: Publicly readable for logo/branding, Admin can write

@@ -49,7 +49,7 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
   const [userApplication, setUserApplication] = useState<WriterApplication | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const isAdmin = user?.email === ADMIN_EMAIL && user?.emailVerified;
+  const isAdmin = user?.email === ADMIN_EMAIL;
   const isApprovedWriter = isAdmin || userApplication?.status === 'approved';
 
   useEffect(() => {
