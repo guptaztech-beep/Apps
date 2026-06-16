@@ -738,57 +738,89 @@ export default function AdminPanel() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-6"
+            className="space-y-12"
           >
-            {applications.length === 0 ? (
-              <div className="bg-editorial-aside border-2 border-black/5 p-12 text-center">
-                <p className="text-xs font-black uppercase tracking-widest opacity-40">No verified requests pending_</p>
-              </div>
-            ) : (
-              applications.map(app => (
-                <div key={app.id} className="bg-editorial-bg border-2 border-black p-6 sm:p-8 flex flex-col md:flex-row gap-8">
-                  <div className="flex-grow space-y-4">
-                    <div className="flex items-center gap-4">
-                      <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 ${app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : app.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {app.status}
-                      </span>
-                      <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{app.date}</span>
-                    </div>
-                    <h3 className="text-2xl font-serif font-black">{app.name}</h3>
-                    <p className="text-xs font-bold text-primary">{app.email}</p>
-                    <div className="p-4 bg-editorial-aside border-l-4 border-primary/20 italic text-sm text-editorial-text/70">
-                      "{app.bio}"
-                    </div>
-                    <a 
-                      href={app.portfolio} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
-                    >
-                      View Portfolio <ExternalLink size={12} />
-                    </a>
-                  </div>
-                  <div className="flex flex-row md:flex-col gap-3 justify-end whitespace-nowrap">
-                    {app.status === 'pending' && (
-                      <>
-                        <button 
-                          onClick={() => updateApplication(app.id, 'approved')}
-                          className="flex-grow md:flex-none flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all"
-                        >
-                          <Check size={14} /> Approve
-                        </button>
-                        <button 
-                          onClick={() => updateApplication(app.id, 'rejected')}
-                          className="flex-grow md:flex-none flex items-center justify-center gap-2 border-2 border-red-600 text-red-600 px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all"
-                        >
-                          <Ban size={14} /> Reject
-                        </button>
-                      </>
-                    )}
-                  </div>
+            {/* Section 1: Pending Verification Requests */}
+            <div className="space-y-6">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 border-b border-amber-500/10 pb-2">
+                Pending Verification Requests ({applications.filter(a => a.status === 'pending').length})
+              </h3>
+              {applications.filter(a => a.status === 'pending').length === 0 ? (
+                <div className="bg-editorial-aside border-2 border-black/5 p-12 text-center">
+                  <p className="text-xs font-black uppercase tracking-widest opacity-40">No verified requests pending_</p>
                 </div>
-              ))
-            )}
+              ) : (
+                applications.filter(a => a.status === 'pending').map(app => (
+                  <div key={app.id} className="bg-editorial-bg border-2 border-black p-6 sm:p-8 flex flex-col md:flex-row gap-8">
+                    <div className="flex-grow space-y-4">
+                      <div className="flex items-center gap-4">
+                        <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-yellow-100 text-yellow-700 animate-pulse">
+                          {app.status}
+                        </span>
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{app.date}</span>
+                      </div>
+                      <h3 className="text-2xl font-serif font-black">{app.name}</h3>
+                      <p className="text-xs font-bold text-primary">{app.email}</p>
+                      <div className="p-4 bg-editorial-aside border-l-4 border-amber-400 italic text-sm text-editorial-text/70">
+                        "{app.comments || app.bio || 'No comment provided'}"
+                      </div>
+                    </div>
+                    <div className="flex flex-row md:flex-col gap-3 justify-end whitespace-nowrap">
+                      <button 
+                        onClick={() => updateApplication(app.id, 'approved')}
+                        className="flex-grow md:flex-none flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all"
+                      >
+                        <Check size={14} /> Approve
+                      </button>
+                      <button 
+                        onClick={() => updateApplication(app.id, 'rejected')}
+                        className="flex-grow md:flex-none flex items-center justify-center gap-2 border-2 border-red-600 text-red-600 px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all"
+                      >
+                        <Ban size={14} /> Reject
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Section 2: Approved Authors & Writers */}
+            <div className="space-y-6">
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-emerald-600 border-b border-emerald-600/10 pb-2">
+                Approved Authors & Writers ({applications.filter(a => a.status === 'approved').length})
+              </h3>
+              {applications.filter(a => a.status === 'approved').length === 0 ? (
+                <div className="bg-editorial-aside border-2 border-black/5 p-12 text-center">
+                  <p className="text-xs font-black uppercase tracking-widest opacity-40">No approved authors yet_</p>
+                </div>
+              ) : (
+                applications.filter(a => a.status === 'approved').map(app => (
+                  <div key={app.id} className="bg-editorial-bg border-2 border-black p-6 sm:p-8 flex flex-col md:flex-row gap-8">
+                    <div className="flex-grow space-y-4">
+                      <div className="flex items-center gap-4">
+                        <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-green-100 text-green-700">
+                          {app.status}
+                        </span>
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{app.date}</span>
+                      </div>
+                      <h3 className="text-2xl font-serif font-black">{app.name}</h3>
+                      <p className="text-xs font-bold text-primary">{app.email}</p>
+                      <div className="p-4 bg-editorial-aside border-l-4 border-green-400 italic text-sm text-editorial-text/70">
+                        "{app.comments || app.bio || 'Approved Academic Writer'}"
+                      </div>
+                    </div>
+                    <div className="flex flex-row md:flex-col gap-3 justify-end whitespace-nowrap">
+                      <button 
+                        onClick={() => updateApplication(app.id, 'rejected')}
+                        className="flex-grow md:flex-none flex items-center justify-center gap-2 border-2 border-red-650 text-red-650 hover:bg-red-650 hover:text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all"
+                      >
+                        <Ban size={14} /> Revoke / Block Writer
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </motion.div>
         )}
 

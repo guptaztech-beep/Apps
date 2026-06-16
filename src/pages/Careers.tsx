@@ -13,7 +13,7 @@ export default function Careers() {
     comments: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [customSubmitted, setCustomSubmitted] = useState(false);
+  const [isReapplying, setIsReapplying] = useState(false);
 
   // Initialize values when user is available
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function Careers() {
         portfolio: '', // compatibility block
         bio: ''        // compatibility block
       });
-      setCustomSubmitted(true);
+      setIsReapplying(false);
     } catch (err) {
       console.error(err);
     } finally {
@@ -56,7 +56,7 @@ export default function Careers() {
 
   // Helper inside simple state to reset status
   const handleReapply = () => {
-    setCustomSubmitted(false);
+    setIsReapplying(true);
     setFormData(prev => ({
       ...prev,
       comments: ''
@@ -127,7 +127,7 @@ export default function Careers() {
             {user && (
               <>
                 {/* 2A: Application Exists */}
-                {userApplication && !customSubmitted ? (
+                {userApplication && !isReapplying ? (
                   <div className="space-y-6">
                     <div className="border-b-2 border-dashed border-black/10 pb-4 mb-4">
                       <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Registered Identity</span>
@@ -219,92 +219,67 @@ export default function Careers() {
                     )}
                   </div>
                 ) : (
-                  /* 2B: Application Does NOT Exist (or customSubmitted is true) */
+                  /* 2B: Application Does NOT Exist (or isReapplying is true) */
                   <div className="block">
-                    {customSubmitted ? (
-                      <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="text-center py-12"
-                      >
-                        <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                          <CheckCircle size={40} />
-                        </div>
-                        <h3 className="text-2xl font-serif font-black mb-4">Application Received_</h3>
-                        <p className="text-editorial-text/60 text-sm font-medium leading-relaxed mb-6">
-                          Your deployment pitch has been queued. Our dispatch board is reviewing details now. Track your live status directly on this page!
-                        </p>
-                        <button 
-                          onClick={() => {
-                            setCustomSubmitted(false);
-                            // Refresh content states
-                          }}
-                          className="text-[10px] font-black uppercase tracking-[0.4em] text-primary hover:tracking-[0.6em] transition-all"
-                        >
-                          [ Back to overview ]
-                        </button>
-                      </motion.div>
-                    ) : (
-                      <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="border-b border-primary/10 pb-4">
-                          <span className="text-[9px] font-bold uppercase tracking-widest text-[#94a3b8] block mb-2">Authenticated Profile</span>
-                          <div className="flex items-center gap-3">
-                            {user.photoURL && (
-                              <img src={user.photoURL} alt={user.displayName || ''} className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" />
-                            )}
-                            <div>
-                              <p className="text-xs font-black text-slate-800 leading-none">{user.displayName}</p>
-                              <p className="text-[10px] font-mono text-slate-400 mt-0.5">{user.email}</p>
-                            </div>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="border-b border-primary/10 pb-4">
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-[#94a3b8] block mb-2">Authenticated Profile</span>
+                        <div className="flex items-center gap-3">
+                          {user.photoURL && (
+                            <img src={user.photoURL} alt={user.displayName || ''} className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" />
+                          )}
+                          <div>
+                            <p className="text-xs font-black text-slate-800 leading-none">{user.displayName}</p>
+                            <p className="text-[10px] font-mono text-slate-400 mt-0.5">{user.email}</p>
                           </div>
                         </div>
+                      </div>
 
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Full Name</label>
-                          <input 
-                            required
-                            type="text" 
-                            value={formData.name}
-                            onChange={e => setFormData({...formData, name: e.target.value})}
-                            placeholder="Enter your name"
-                            className="w-full bg-editorial-aside border-2 border-primary/5 p-4 text-sm font-bold focus:border-primary outline-none transition-all"
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Full Name</label>
+                        <input 
+                          required
+                          type="text" 
+                          value={formData.name}
+                          onChange={e => setFormData({...formData, name: e.target.value})}
+                          placeholder="Enter your name"
+                          className="w-full bg-editorial-aside border-2 border-primary/5 p-4 text-sm font-bold focus:border-primary outline-none transition-all"
+                        />
+                      </div>
 
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Academic Email</label>
-                          <input 
-                            required
-                            type="email" 
-                            value={formData.email}
-                            onChange={e => setFormData({...formData, email: e.target.value})}
-                            placeholder="example@gmail.com"
-                            className="w-full bg-editorial-aside border-2 border-primary/5 p-4 text-sm font-bold focus:border-primary outline-none transition-all"
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Academic Email</label>
+                        <input 
+                          required
+                          type="email" 
+                          value={formData.email}
+                          onChange={e => setFormData({...formData, email: e.target.value})}
+                          placeholder="example@gmail.com"
+                          className="w-full bg-editorial-aside border-2 border-primary/5 p-4 text-sm font-bold focus:border-primary outline-none transition-all"
+                        />
+                      </div>
 
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Why apply? (Comments)</label>
-                          <textarea 
-                            required
-                            value={formData.comments}
-                            onChange={e => setFormData({...formData, comments: e.target.value})}
-                            placeholder="Describe your writing perspective and any comments..."
-                            className="w-full bg-editorial-aside border-2 border-primary/5 p-4 text-sm font-medium focus:border-primary outline-none transition-all h-36 resize-none"
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Why apply? (Comments)</label>
+                        <textarea 
+                          required
+                          value={formData.comments}
+                          onChange={e => setFormData({...formData, comments: e.target.value})}
+                          placeholder="Describe your writing perspective and any comments..."
+                          className="w-full bg-editorial-aside border-2 border-primary/5 p-4 text-sm font-medium focus:border-primary outline-none transition-all h-36 resize-none"
+                        />
+                      </div>
 
-                        <button 
-                          type="submit" 
-                          disabled={isLoading}
-                          className="w-full bg-primary text-white py-5 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all flex items-center justify-center gap-2 group"
-                        >
-                          {isLoading ? 'Processing...' : (
-                            <>Submit Application <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /></>
-                          )}
-                        </button>
-                      </form>
-                    )}
+                      <button 
+                        type="submit" 
+                        disabled={isLoading}
+                        className="w-full bg-primary text-white py-5 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all flex items-center justify-center gap-2 group"
+                      >
+                        {isLoading ? 'Processing...' : (
+                          <>Submit Application <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /></>
+                        )}
+                      </button>
+                    </form>
                   </div>
                 )}
               </>

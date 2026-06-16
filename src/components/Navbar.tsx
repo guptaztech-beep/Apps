@@ -66,11 +66,9 @@ export default function Navbar() {
               </div>
 
               <div className="flex items-center gap-4">
-                {isAdmin ? (
+                {isApprovedWriter && (
                   <Link to="/admin" className="text-secondary hover:underline font-black font-sans uppercase text-[10px] sm:text-xs tracking-[0.1em]">Editor Desk</Link>
-                ) : isApprovedWriter ? (
-                  <Link to="/admin" className="text-secondary hover:underline font-black font-sans uppercase text-[10px] sm:text-xs tracking-[0.1em]">Writer Dashboard</Link>
-                ) : null}
+                )}
                 <button 
                   onClick={user ? () => signOut(auth) : () => signInWithPopup(auth, googleProvider)}
                   className="flex items-center gap-1.5 hover:text-secondary transition-all"
