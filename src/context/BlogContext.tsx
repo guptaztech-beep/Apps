@@ -22,6 +22,8 @@ interface BlogContextType {
   applications: WriterApplication[];
   config: AppConfig;
   user: User | null;
+  userApplication: WriterApplication | null;
+  isApprovedWriter: boolean;
   isAdmin: boolean;
   loading: boolean;
   addBlog: (blog: Omit<Blog, 'id'>) => Promise<void>;
@@ -44,9 +46,29 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
   const [applications, setApplications] = useState<WriterApplication[]>([]);
   const [config, setConfig] = useState<AppConfig>({ logoUrl: '', logoHeight: 40, productionDomain: '' });
   const [user, setUser] = useState<User | null>(null);
+  const [userApplication, setUserApplication] = useState<WriterApplication | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isAdmin = user?.email === ADMIN_EMAIL && user?.emailVerified;
+  const isApprovedWriter = isAdmin || userApplication?.status === 'approved';
+
+  useEffect(() => {
+    if (!user) {
+      setUserApplication(null);
+      return;
+    }
+    const docRef = doc(db, 'applications', user.uid);
+    const unsubUserApp = onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setUserApplication({ id: snapshot.id, ...snapshot.data() } as WriterApplication);
+      } else {
+        setUserApplication(null);
+      }
+    }, (error) => {
+      console.warn("User application snapshot failed:", error);
+    });
+    return () => unsubUserApp();
+  }, [user]);
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (u) => {
@@ -200,15 +222,19 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
   };
 
   const submitApplication = async (app: Omit<WriterApplication, 'id' | 'status' | 'date'>) => {
+    if (!user) {
+      throw new Error("You must be logged in to apply");
+    }
     try {
-      await addDoc(collection(db, 'applications'), {
+      await setDoc(doc(db, 'applications', user.uid), {
         ...app,
         status: 'pending',
+        userId: user.uid,
         date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
         createdAt: serverTimestamp()
       });
     } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, 'applications');
+      handleFirestoreError(error, OperationType.CREATE, `applications/${user.uid}`);
     }
   };
 
@@ -234,6 +260,8 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
       applications,
       config,
       user, 
+      userApplication,
+      isApprovedWriter,
       isAdmin, 
       loading,
       addBlog, 

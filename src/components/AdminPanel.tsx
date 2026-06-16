@@ -28,7 +28,7 @@ export default function AdminPanel() {
     blogs, addBlog, updateBlog, deleteBlog, 
     applications, updateApplication,
     config, updateConfig,
-    isAdmin, loading 
+    isAdmin, isApprovedWriter, user, loading 
   } = useBlogs();
   const [activeTab, setActiveTab] = useState<AdminTab>('dispatches');
   const [isEditing, setIsEditing] = useState(false);
@@ -51,15 +51,15 @@ export default function AdminPanel() {
     </div>
   );
 
-  if (!isAdmin) return (
+  if (!isAdmin && !isApprovedWriter) return (
     <div className="min-h-screen flex items-center justify-center bg-editorial-bg p-8">
       <div className="max-w-md w-full bg-editorial-bg border-4 border-black p-12 text-center shadow-[10px_10px_0_0_rgba(0,0,0,1)] sm:shadow-[16px_16px_0_0_rgba(0,0,0,1)] dark:shadow-white/5">
         <h2 className="text-3xl font-serif font-black italic mb-6">Access_Denied</h2>
         <p className="text-xs font-bold uppercase tracking-widest text-slate-500 leading-relaxed mb-8">
-          Unauthorized clearance detected. This node is reserved for RollFetch Editorial Council members only.
+          Unauthorized clearance detected. This node is reserved for Approved Writers and Editorial council members only.
         </p>
-        <Link to="/" className="inline-block bg-primary text-white px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all">
-          Return to Hub
+        <Link to="/careers" className="inline-block bg-primary text-white px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all">
+          Apply to write
         </Link>
       </div>
     </div>
@@ -91,7 +91,8 @@ export default function AdminPanel() {
       category: 'How-To',
       excerpt: '',
       content: '',
-      author: 'Admin',
+      author: isAdmin ? 'Admin' : (user?.displayName || 'Academic Writer'),
+      authorId: user?.uid || '',
       isFeatured: false,
       galleryImages: [],
       contentImages: [],
@@ -191,7 +192,15 @@ export default function AdminPanel() {
     if (!currentBlog.title || !currentBlog.content) return alert("Title and Content are required");
     
     const slug = currentBlog.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-    const newBlog = { ...currentBlog, slug } as Blog;
+    const finalAuthor = isAdmin ? (currentBlog.author || 'Admin') : (user?.displayName || 'Academic Writer');
+    const finalAuthorId = isAdmin ? (currentBlog.authorId || user?.uid || '') : (user?.uid || '');
+
+    const newBlog = { 
+      ...currentBlog, 
+      slug,
+      author: finalAuthor,
+      authorId: finalAuthorId
+    } as Blog;
 
     if (currentBlog.id && blogs.find(b => b.id === currentBlog.id)) {
       updateBlog(newBlog);
@@ -278,7 +287,9 @@ export default function AdminPanel() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-12 border-b-4 border-black pb-8">
         <div>
-          <h2 className="text-4xl sm:text-5xl font-serif font-black italic tracking-tighter text-editorial-text">Editor Desk</h2>
+          <h2 className="text-4xl sm:text-5xl font-serif font-black italic tracking-tighter text-editorial-text">
+            {isAdmin ? "Editor Desk" : "Writer Dashboard"}
+          </h2>
           <nav className="flex gap-6 mt-4 overflow-x-auto whitespace-nowrap scrollbar-hide pb-2">
             <button 
               onClick={() => { setActiveTab('dispatches'); setIsEditing(false); }}
@@ -286,23 +297,27 @@ export default function AdminPanel() {
             >
               <FileText size={14} /> Dispatches
             </button>
-            <button 
-              onClick={() => { setActiveTab('applications'); setIsEditing(false); }}
-              className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'applications' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-black'}`}
-            >
-              <Users size={14} /> Verified Requests
-              {applications.filter(a => a.status === 'pending').length > 0 && (
-                <span className="bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[8px] animate-pulse">
-                  {applications.filter(a => a.status === 'pending').length}
-                </span>
-              )}
-            </button>
-            <button 
-              onClick={() => { setActiveTab('settings'); setIsEditing(false); }}
-              className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'settings' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-black'}`}
-            >
-              <Settings size={14} /> Brand Assets
-            </button>
+            {isAdmin && (
+              <>
+                <button 
+                  onClick={() => { setActiveTab('applications'); setIsEditing(false); }}
+                  className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'applications' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-black'}`}
+                >
+                  <Users size={14} /> Verified Requests
+                  {applications.filter(a => a.status === 'pending').length > 0 && (
+                    <span className="bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[8px] animate-pulse">
+                      {applications.filter(a => a.status === 'pending').length}
+                    </span>
+                  )}
+                </button>
+                <button 
+                  onClick={() => { setActiveTab('settings'); setIsEditing(false); }}
+                  className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'settings' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-black'}`}
+                >
+                  <Settings size={14} /> Brand Assets
+                </button>
+              </>
+            )}
           </nav>
         </div>
         {activeTab === 'dispatches' && (
@@ -399,9 +414,10 @@ export default function AdminPanel() {
                       <label className="block text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Author (Journalist Pseudo)</label>
                       <input 
                         type="text" 
-                        value={currentBlog.author}
+                        disabled={!isAdmin}
+                        value={isAdmin ? currentBlog.author : (user?.displayName || currentBlog.author || '')}
                         onChange={e => setCurrentBlog({...currentBlog, author: e.target.value})}
-                        className="w-full bg-editorial-aside border-2 border-primary/10 p-4 text-xs font-bold focus:border-primary outline-none transition-all uppercase tracking-widest text-editorial-text"
+                        className={`w-full bg-editorial-aside border-2 border-primary/10 p-4 text-xs font-bold focus:border-primary outline-none transition-all uppercase tracking-widest text-editorial-text ${!isAdmin ? 'opacity-60 cursor-not-allowed bg-black/5' : ''}`}
                         placeholder="e.g. Editorial Board"
                       />
                     </div>
@@ -669,14 +685,19 @@ export default function AdminPanel() {
               </motion.div>
             ) : (
               <div className="grid grid-cols-1 gap-6">
-                {blogs.map(blog => (
+                {(isAdmin 
+                  ? blogs 
+                  : blogs.filter(b => b.authorId === user?.uid || b.author === user?.displayName)
+                ).map(blog => (
                   <div key={blog.id} className="bg-editorial-bg border-2 border-black/5 flex flex-col sm:flex-row items-center justify-between p-6 hover:border-black transition-all group overflow-hidden">
                     <div className="flex items-center gap-6 mb-6 sm:mb-0 w-full sm:w-auto">
                       <div className="w-16 h-16 border-2 border-black overflow-hidden flex-shrink-0 group-hover:border-primary transition-colors">
                         <img src={blog.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" />
                       </div>
                       <div className="min-w-0 flex-grow">
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/40 group-hover:text-primary transition-colors">{blog.category} _ {blog.date}</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/40 group-hover:text-primary transition-colors">
+                          {blog.category} _ {blog.date} {blog.author ? ` _ By ${blog.author}` : ''}
+                        </span>
                         <h4 className="text-lg sm:text-xl font-serif font-black underline decoration-black/5 group-hover:decoration-secondary transition-all truncate">{blog.title}</h4>
                       </div>
                     </div>

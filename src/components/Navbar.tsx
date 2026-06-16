@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import { auth, googleProvider, signInWithPopup, signOut } from '../lib/firebase';
 
 export default function Navbar() {
-  const { user, config } = useBlogs();
+  const { user, config, isApprovedWriter, isAdmin } = useBlogs();
   const { theme, toggleTheme } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
@@ -66,9 +66,11 @@ export default function Navbar() {
               </div>
 
               <div className="flex items-center gap-4">
-                {user?.email === 'guptaztech@gmail.com' && (
-                  <Link to="/admin" className="text-secondary hover:underline font-black">Editor Desk</Link>
-                )}
+                {isAdmin ? (
+                  <Link to="/admin" className="text-secondary hover:underline font-black font-sans uppercase text-[10px] sm:text-xs tracking-[0.1em]">Editor Desk</Link>
+                ) : isApprovedWriter ? (
+                  <Link to="/admin" className="text-secondary hover:underline font-black font-sans uppercase text-[10px] sm:text-xs tracking-[0.1em]">Writer Dashboard</Link>
+                ) : null}
                 <button 
                   onClick={user ? () => signOut(auth) : () => signInWithPopup(auth, googleProvider)}
                   className="flex items-center gap-1.5 hover:text-secondary transition-all"

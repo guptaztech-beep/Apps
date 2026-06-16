@@ -15,10 +15,12 @@ export interface WriterApplication {
   id: string;
   name: string;
   email: string;
-  portfolio: string;
-  bio: string;
+  comments: string;
+  portfolio?: string;
+  bio?: string;
   status: 'pending' | 'approved' | 'rejected';
   date: string;
+  userId?: string;
 }
 
 export interface AppConfig {
@@ -42,6 +44,7 @@ export interface Blog {
   category: string;
   date: string;
   author: string;
+  authorId?: string;
   imageUrl: string;
   galleryImages?: string[];
   contentImages?: BlogImage[];
