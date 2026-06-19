@@ -57,3 +57,12 @@ export interface Blog {
 }
 
 export type Category = string | 'All';
+
+export interface UserProfile {
+  id: string;
+  displayName: string;
+  bio: string;
+  photoUrl?: string;
+  updatedAt?: any;
+}
+

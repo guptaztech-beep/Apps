@@ -63,6 +63,18 @@
       "properties": {
         "logoUrl": { "type": "string" }
       }
+    },
+    "user": {
+      "title": "User Profile",
+      "description": "Author biographies and displays",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "bio": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["displayName", "bio"]
     }
   },
   "firestore": {
@@ -70,6 +82,7 @@
     "/blogs/{blogId}/comments": { "schema": "comment", "description": "Comments for a post" },
     "/subscribers": { "schema": "subscriber", "description": "Newsletter list" },
     "/applications": { "schema": "writerApplication", "description": "Writer hiring pool" },
-    "/config": { "schema": "appConfig", "description": "System settings" }
+    "/config": { "schema": "appConfig", "description": "System settings" },
+    "/users/{userId}": { "schema": "user", "description": "Author biographies and displays" }
   }
 }

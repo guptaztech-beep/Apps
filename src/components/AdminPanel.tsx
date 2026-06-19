@@ -21,13 +21,14 @@ const turndownService = new TurndownService({
   codeBlockStyle: 'fenced'
 });
 
-type AdminTab = 'dispatches' | 'applications' | 'settings';
+type AdminTab = 'dispatches' | 'applications' | 'settings' | 'profile';
 
 export default function AdminPanel() {
   const { 
     blogs, addBlog, updateBlog, deleteBlog, 
     applications, updateApplication,
     config, updateConfig,
+    userProfile, updateProfile,
     isAdmin, isApprovedWriter, user, loading 
   } = useBlogs();
   const [activeTab, setActiveTab] = useState<AdminTab>('dispatches');
@@ -38,6 +39,36 @@ export default function AdminPanel() {
   const [logoUrl, setLogoUrl] = useState(config.logoUrl);
   const [logoHeight, setLogoHeight] = useState(config.logoHeight || 40);
   const [productionDomain, setProductionDomain] = useState(config.productionDomain || '');
+
+  const [profileName, setProfileName] = useState('');
+  const [profileBio, setProfileBio] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState('');
+
+  useEffect(() => {
+    if (userProfile) {
+      setProfileName(userProfile.displayName || '');
+      setProfileBio(userProfile.bio || '');
+      setProfilePhoto(userProfile.photoUrl || '');
+    }
+  }, [userProfile]);
+
+  const handleSaveProfile = async () => {
+    if (!profileName.trim()) {
+      alert("Name is required.");
+      return;
+    }
+    try {
+      await updateProfile({
+        displayName: profileName,
+        bio: profileBio,
+        photoUrl: profilePhoto
+      });
+      alert("Journalist/Writer profile updated successfully!");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to update profile.");
+    }
+  };
 
   useEffect(() => {
     setLogoUrl(config.logoUrl);
@@ -192,7 +223,9 @@ export default function AdminPanel() {
     if (!currentBlog.title || !currentBlog.content) return alert("Title and Content are required");
     
     const slug = currentBlog.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-    const finalAuthor = isAdmin ? (currentBlog.author || 'Admin') : (user?.displayName || 'Academic Writer');
+    const finalAuthor = isAdmin 
+      ? (currentBlog.author || userProfile?.displayName || 'Admin') 
+      : (userProfile?.displayName || user?.displayName || 'Academic Writer');
     const finalAuthorId = isAdmin ? (currentBlog.authorId || user?.uid || '') : (user?.uid || '');
 
     const newBlog = { 
@@ -296,6 +329,12 @@ export default function AdminPanel() {
               className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'dispatches' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-black'}`}
             >
               <FileText size={14} /> Dispatches
+            </button>
+            <button 
+              onClick={() => { setActiveTab('profile'); setIsEditing(false); }}
+              className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'profile' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-black'}`}
+            >
+              <Users size={14} /> Profile / About Me
             </button>
             {isAdmin && (
               <>
@@ -685,10 +724,17 @@ export default function AdminPanel() {
               </motion.div>
             ) : (
               <div className="grid grid-cols-1 gap-6">
-                {(isAdmin 
-                  ? blogs 
-                  : blogs.filter(b => b.authorId === user?.uid || b.author === user?.displayName)
-                ).map(blog => (
+                {(() => {
+                  const filteredBlogs = isAdmin 
+                    ? [...blogs] 
+                    : blogs.filter(b => b.authorId === user?.uid || b.author === user?.displayName || (userProfile && b.author === userProfile.displayName));
+                  
+                  return filteredBlogs.sort((a, b) => {
+                    const timeA = (a as any).createdAt?.seconds ? (a as any).createdAt.seconds * 1000 : (a as any).createdAt ? new Date((a as any).createdAt).getTime() : new Date(a.date).getTime();
+                    const timeB = (b as any).createdAt?.seconds ? (b as any).createdAt.seconds * 1000 : (b as any).createdAt ? new Date((b as any).createdAt).getTime() : new Date(b.date).getTime();
+                    return timeB - timeA;
+                  });
+                })().map(blog => (
                   <div key={blog.id} className="bg-editorial-bg border-2 border-black/5 flex flex-col sm:flex-row items-center justify-between p-6 hover:border-black transition-all group overflow-hidden">
                     <div className="flex items-center gap-6 mb-6 sm:mb-0 w-full sm:w-auto">
                       <div className="w-16 h-16 border-2 border-black overflow-hidden flex-shrink-0 group-hover:border-primary transition-colors">
@@ -908,6 +954,101 @@ export default function AdminPanel() {
                   <p className="mt-4 text-[9px] font-bold text-center opacity-30 uppercase tracking-widest">
                     This will update the header logo across all verified nodes.
                   </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'profile' && (
+          <motion.div
+            key="profile"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="max-w-2xl mx-auto"
+          >
+            <div className="bg-editorial-bg border-4 border-black p-8 sm:p-12 shadow-[8px_8px_0_0_rgba(0,0,0,0.05)] sm:shadow-[12px_12px_0_0_rgba(0,0,0,0.05)]">
+              <h3 className="text-2xl font-serif font-black mb-8 border-b border-black/10 pb-4 flex items-center gap-3">
+                <Users className="text-primary" /> Journalist Profile
+              </h3>
+
+              <div className="space-y-8">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">
+                    Journalist Pen Name / Display Name
+                  </label>
+                  <input 
+                    type="text" 
+                    value={profileName}
+                    onChange={e => setProfileName(e.target.value)}
+                    placeholder="e.g. Renu Sharma"
+                    className="w-full bg-editorial-aside border-2 border-primary/10 p-4 text-sm font-bold focus:border-primary outline-none transition-all text-editorial-text animate-none"
+                  />
+                  <span className="text-[9px] uppercase font-bold opacity-30 mt-1 block">
+                    This updated name appears in the "About the Writer" section on your dispatches.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">
+                    Journalist Headshot / Avatar URL
+                  </label>
+                  <input 
+                    type="text" 
+                    value={profilePhoto}
+                    onChange={e => setProfilePhoto(e.target.value)}
+                    placeholder="https://images.unsplash.com/..."
+                    className="w-full bg-editorial-aside border-2 border-primary/10 p-4 text-sm font-mono focus:border-primary outline-none transition-all text-editorial-text"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">
+                    Journalist Biography (About Me)
+                  </label>
+                  <textarea 
+                    value={profileBio}
+                    onChange={e => setProfileBio(e.target.value)}
+                    placeholder="e.g. Senior Political Analyst covering national policy and university reforms. Alumnus of IIMC."
+                    className="w-full bg-editorial-aside border-2 border-primary/10 p-4 text-sm font-medium focus:border-primary outline-none transition-all h-32 text-editorial-text resize-none"
+                  />
+                  <div className="mt-2 text-[9px] uppercase font-bold opacity-30 text-right">
+                    Characters: {profileBio?.length || 0}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest mb-4 opacity-60">
+                    Real-Time Press Card Preview
+                  </label>
+                  <div className="p-6 bg-editorial-aside border-2 border-black/5 rounded-lg flex items-center gap-4">
+                    <div className="w-14 h-14 border border-black overflow-hidden flex-shrink-0 bg-slate-200">
+                      {profilePhoto ? (
+                        <img referrerPolicy="no-referrer" src={profilePhoto} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs font-black bg-primary text-white">
+                          PR
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-serif font-black text-black">{profileName || 'Your Name'}</h4>
+                      <p className="text-[10px] uppercase font-black text-primary tracking-widest mt-0.5">Verified Journalist & Writer</p>
+                      <p className="text-xs text-slate-500 italic mt-1 font-sans leading-relaxed">
+                        "{profileBio || 'Write your professional journey in the bio above. It will show up on all news posts.'}"
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-black/10">
+                  <button 
+                    onClick={handleSaveProfile}
+                    className="w-full bg-primary text-white py-5 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all flex items-center justify-center gap-2 group shadow-lg shadow-primary/10"
+                  >
+                    Save Biography <Check size={16} />
+                  </button>
                 </div>
               </div>
             </div>

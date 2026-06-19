@@ -14,7 +14,7 @@ import {
   getDocs
 } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { Blog, Comment, Reactions, WriterApplication, AppConfig } from '../types';
+import { Blog, Comment, Reactions, WriterApplication, AppConfig, UserProfile } from '../types';
 import { BLOGS } from '../constants';
 
 interface BlogContextType {
@@ -23,6 +23,7 @@ interface BlogContextType {
   config: AppConfig;
   user: User | null;
   userApplication: WriterApplication | null;
+  userProfile: UserProfile | null;
   isApprovedWriter: boolean;
   isAdmin: boolean;
   loading: boolean;
@@ -35,6 +36,7 @@ interface BlogContextType {
   submitApplication: (app: Omit<WriterApplication, 'id' | 'status' | 'date'>) => Promise<void>;
   updateApplication: (id: string, status: WriterApplication['status']) => Promise<void>;
   updateConfig: (config: AppConfig) => Promise<void>;
+  updateProfile: (profile: Omit<UserProfile, 'id'>) => Promise<void>;
 }
 
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
@@ -47,6 +49,7 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
   const [config, setConfig] = useState<AppConfig>({ logoUrl: '', logoHeight: 40, productionDomain: '' });
   const [user, setUser] = useState<User | null>(null);
   const [userApplication, setUserApplication] = useState<WriterApplication | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isAdmin = user?.email === ADMIN_EMAIL;
@@ -55,6 +58,7 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) {
       setUserApplication(null);
+      setUserProfile(null);
       return;
     }
     const docRef = doc(db, 'applications', user.uid);
@@ -67,7 +71,26 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
     }, (error) => {
       console.warn("User application snapshot failed:", error);
     });
-    return () => unsubUserApp();
+
+    const profileRef = doc(db, 'users', user.uid);
+    const unsubProfile = onSnapshot(profileRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setUserProfile({ id: snapshot.id, ...snapshot.data() } as UserProfile);
+      } else {
+        setUserProfile({
+          id: user.uid,
+          displayName: user.displayName || 'Anonymous Journalist',
+          bio: 'Contributor to RollFetch news dispatch board.'
+        });
+      }
+    }, (error) => {
+      console.warn("User profile snapshot failed:", error);
+    });
+
+    return () => {
+      unsubUserApp();
+      unsubProfile();
+    };
   }, [user]);
 
   useEffect(() => {
@@ -254,6 +277,18 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (profileData: Omit<UserProfile, 'id'>) => {
+    if (!user) throw new Error("Must be logged in to update profile");
+    try {
+      await setDoc(doc(db, 'users', user.uid), {
+        ...profileData,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
+    }
+  };
+
   return (
     <BlogContext.Provider value={{ 
       blogs, 
@@ -261,6 +296,7 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
       config,
       user, 
       userApplication,
+      userProfile,
       isApprovedWriter,
       isAdmin, 
       loading,
@@ -272,7 +308,8 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
       subscribe,
       submitApplication,
       updateApplication,
-      updateConfig
+      updateConfig,
+      updateProfile
     }}>
       {children}
     </BlogContext.Provider>
