@@ -1,11 +1,11 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Calendar, User, Share2, ExternalLink, ArrowRight, 
-  MessageSquare, ThumbsUp, Lightbulb, CheckCircle2, Copy, Check, Sparkles, MapPin, Clock, Newspaper
+  MessageSquare, ThumbsUp, Lightbulb, CheckCircle2, Copy, Check, Sparkles, MapPin, Clock, Newspaper, X
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useBlogs } from '../context/BlogContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, query, orderBy, onSnapshot, doc } from 'firebase/firestore';
@@ -94,6 +94,9 @@ export default function BlogDetails() {
   const [isGeneratingShare, setIsGeneratingShare] = useState(false);
   const [copied, setCopied] = useState(false);
   const [safePlugins, setSafePlugins] = useState<any[]>([]);
+  const [showPosterModal, setShowPosterModal] = useState(false);
+  const [posterError, setPosterError] = useState<string | null>(null);
+  const posterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const plugins = [];
@@ -188,9 +191,54 @@ export default function BlogDetails() {
     setCommentText('');
   };
 
+  const handleDownloadPoster = async () => {
+    if (!posterRef.current) return;
+    setIsGeneratingShare(true);
+    setPosterError(null);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 400));
+      const dataUrl = await toPng(posterRef.current, {
+        quality: 0.95,
+        backgroundColor: '#fbfbf9',
+      });
+      const link = document.createElement('a');
+      link.download = `RollFetch-${blog.slug || 'story'}-poster.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err: any) {
+      console.warn("Retrying with fallback due to CORS asset:", err);
+      try {
+        const dataUrl = await toPng(posterRef.current, {
+          quality: 0.90,
+          backgroundColor: '#fbfbf9',
+        });
+        const link = document.createElement('a');
+        link.download = `RollFetch-${blog.slug || 'story'}-poster.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (retryErr) {
+        setPosterError("Lead image has restricted cross-origin access! Direct download might miss the image. You can take a screenshot of the beautiful card below!");
+      }
+    } finally {
+      setIsGeneratingShare(false);
+    }
+  };
+
+  // Dynamically compute global trending highlights based on latest stories
+  const dynamicHighlights = useMemo(() => {
+    return [...blogs].slice(0, 3);
+  }, [blogs]);
+
   // HT-Style: Filter trending side lists of same category or generic featured
-  const recommendedBlogs = blogs.filter(b => b.id !== blog.id).slice(0, 5);
-  const relativeCategories = blogs.filter(b => b.category === blog.category && b.id !== blog.id).slice(0, 3);
+  const recommendedBlogs = useMemo(() => {
+    const same = blogs.filter(b => b.category === blog.category && b.id !== blog.id);
+    const other = blogs.filter(b => b.category !== blog.category && b.id !== blog.id);
+    return [...same, ...other].slice(0, 5);
+  }, [blogs, blog]);
+
+  const relativeCategories = useMemo(() => {
+    return blogs.filter(b => b.category === blog.category && b.id !== blog.id).slice(0, 3);
+  }, [blogs, blog]);
   const reactions = blog.reactions || { like: 0, informative: 0, helpful: 0 };
 
   const MarkdownRenderer = ({ content }: { content: string }) => {
@@ -337,6 +385,13 @@ export default function BlogDetails() {
               >
                 {copied ? <Check size={12} /> : <Copy size={12} />}
                 {copied ? 'Copied' : 'Copy Link'}
+              </button>
+
+              <button 
+                onClick={() => setShowPosterModal(true)}
+                className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-amber-600 hover:from-black hover:to-black text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-wider rounded border border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all cursor-pointer"
+              >
+                <Newspaper size={12} /> Generate Poster
               </button>
             </div>
 
@@ -550,7 +605,7 @@ export default function BlogDetails() {
               <div className="flex items-center justify-between border-b-2 border-black/10 pb-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-[#dc2626] flex items-center gap-1.5">
                   <span className="bg-[#b91c1c] w-2.5 h-2.5 rounded-full animate-pulse" />
-                  BOARD BULLETIN DESK
+                  TRENDING HIGHLIGHTS
                 </span>
                 <span className="text-[9px] font-bold bg-yellow-100 text-yellow-800 px-1.5 py-0.5 uppercase tracking-wider font-mono">
                   LIVE
@@ -558,41 +613,45 @@ export default function BlogDetails() {
               </div>
 
               <div className="space-y-4 text-xs font-sans">
-                <div className="border-b border-black/5 pb-2">
-                  <span className="text-[9px] font-black uppercase text-slate-400 block mb-0.5">CBSE UPDATE</span>
-                  <p className="font-extrabold leading-tight hover:text-[#dc2626] cursor-pointer">Secondary Board Re-evaluation fee process released details.</p>
-                </div>
-                <div className="border-b border-black/5 pb-2">
-                  <span className="text-[9px] font-black uppercase text-slate-400 block mb-0.5">NEET STATUS</span>
-                  <p className="font-extrabold leading-tight hover:text-[#dc2626] cursor-pointer">State counseling cutoff lists announced online live tracker.</p>
-                </div>
-                <div>
-                  <span className="text-[9px] font-black uppercase text-slate-400 block mb-0.5">CUET ANNOUNCEMENT</span>
-                  <p className="font-extrabold leading-tight hover:text-[#dc2626] cursor-pointer">Expected normalisation percentile mapping keys declared.</p>
-                </div>
+                {dynamicHighlights.length > 0 ? (
+                  dynamicHighlights.map((bh, idx) => (
+                    <div key={bh.id} className="border-b border-black/5 last:border-b-0 pb-2.5 last:pb-0">
+                      <span className="text-[8px] font-black uppercase text-slate-400 block mb-0.5">{bh.category}</span>
+                      <Link to={`/blog/${bh.slug}`}>
+                        <p className="font-extrabold leading-tight text-slate-900 hover:text-primary cursor-pointer line-clamp-2 transition-colors">
+                          {bh.title}
+                        </p>
+                      </Link>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-[10px] text-slate-400">Loading dynamic updates...</p>
+                )}
               </div>
             </div>
 
-            {/* 2. Hot Categories Bulletins (HT Style list) */}
-            <div className="border-2 border-black p-5 space-y-5 bg-white dark:bg-zinc-950 rounded">
+            {/* 2. Related Articles Bulletins with THUMBNAILS (No more exam naming) */}
+            <div className="border-2 border-black p-5 space-y-5 bg-white dark:bg-zinc-950 rounded shadow-[4px_4px_0_0_rgba(0,0,0,0.05)]">
               <h3 className="text-xs font-black uppercase tracking-[0.25em] pb-2 border-b-2 border-black text-slate-800 dark:text-slate-200">
-                Trending Exam Dispatches
+                Related Bulletins
               </h3>
 
-              <div className="divide-y divide-slate-100 space-y-4">
+              <div className="space-y-4">
                 {recommendedBlogs.length > 0 ? (
                   recommendedBlogs.map((b, idx) => (
-                    <div key={b.id} className="pt-4 first:pt-0 group text-slate-800">
-                      <div className="flex items-start gap-3">
-                        <span className="text-3xl font-serif font-black italic text-slate-200 group-hover:text-yellow-405 transition-colors leading-[1] select-none shrink-0 text-amber-500">
-                          {`0${idx + 1}`}
-                        </span>
-                        <div className="space-y-1 min-w-0">
-                          <Link to={`/category/${b.category}`} className="text-[9px] text-[#2563eb] font-bold uppercase tracking-widest hover:underline">
+                    <div key={b.id} className="pt-3 border-t border-slate-100 first:border-t-0 first:pt-0 group text-slate-800">
+                      <div className="flex gap-3 items-center">
+                        {b.imageUrl && (
+                          <div className="w-14 h-14 min-w-[56px] max-w-[56px] bg-slate-100 border-2 border-black rounded overflow-hidden shrink-0 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+                            <img src={b.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform" referrerPolicy="no-referrer" alt="" />
+                          </div>
+                        )}
+                        <div className="space-y-0.5 min-w-0 flex-grow">
+                          <Link to={`/category/${b.category}`} className="text-[8.5px] text-[#2563eb] font-extrabold uppercase tracking-widest hover:underline block">
                             {b.category}
                           </Link>
                           <Link to={`/blog/${b.slug}`}>
-                            <h4 className="text-xs font-serif font-black leading-snug group-hover:text-primary/75 group-hover:underline decoration-yellow-400 decoration-2 transition-all text-slate-800 dark:text-slate-100 line-clamp-2">
+                            <h4 className="text-xs font-serif font-black leading-tight group-hover:text-primary transition-all text-slate-850 dark:text-slate-100 line-clamp-2 hover:underline">
                               {b.title}
                             </h4>
                           </Link>
@@ -637,6 +696,122 @@ export default function BlogDetails() {
 
         </div>
       </div>
+
+      {/* ========================================================
+          SHARE POSTER GENERATOR DESIGN OVERLAY (Hindustan Times Style Poster)
+          ======================================================== */}
+      <AnimatePresence>
+        {showPosterModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#2d3748] border-4 border-black max-w-sm sm:max-w-md w-full p-6 space-y-6 shadow-[12px_12px_0_0_rgba(0,0,0,0.5)] my-12 rounded-lg relative"
+            >
+              <div className="flex justify-between items-center border-b-2 border-black/20 pb-3">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Share Poster Studio</span>
+                <button 
+                  onClick={() => {
+                    setShowPosterModal(false);
+                    setPosterError(null);
+                  }}
+                  className="bg-black hover:bg-red-600 text-white p-1 rounded cursor-pointer transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Poster Snapshot Container (Exactly what gets captured) */}
+              <div className="border-4 border-black overflow-hidden relative shadow-lg rounded-sm" style={{ contentVisibility: 'auto' }}>
+                <div 
+                  ref={posterRef} 
+                  className="bg-[#fdecbe] text-black p-6 space-y-4 max-w-full font-serif flex flex-col justify-between"
+                  style={{ width: '400px', minHeight: '520px', margin: '0 auto' }}
+                >
+                  {/* Poster header */}
+                  <div className="border-b-4 border-black pb-2.5 text-center space-y-1">
+                    <span className="text-2xl font-black italic tracking-tighter uppercase font-serif text-[#1a202c]">
+                      RollFetch
+                    </span>
+                    <p className="text-[8px] uppercase tracking-[0.3em] font-sans font-black opacity-60">Verified Press Flash Release</p>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="space-y-4 flex-grow flex flex-col justify-center">
+                    <div>
+                      <span className="inline-block bg-[#e53e3e] text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 mb-2 font-sans">
+                        {blog.category}
+                      </span>
+                      <h3 className="text-lg font-black leading-tight tracking-tight text-slate-900 font-serif">
+                        {blog.title}
+                      </h3>
+                    </div>
+
+                    {/* Main Image */}
+                    {blog.imageUrl && (
+                      <div className="w-full h-40 border-2 border-black overflow-hidden bg-black shrink-0 shadow-sm">
+                        <img 
+                          src={blog.imageUrl} 
+                          className="w-full h-full object-cover opacity-95" 
+                          alt="" 
+                          referrerPolicy="no-referrer"
+                          crossOrigin="anonymous"
+                        />
+                      </div>
+                    )}
+
+                    {/* Brief Excerpt */}
+                    <p className="text-[11px] text-slate-800 leading-relaxed font-sans font-medium line-clamp-3">
+                      {blog.excerpt || "Visit the official RollFetch portal to view complete details on this latest update, direct reactions, and live coverage."}
+                    </p>
+                  </div>
+
+                  {/* Stamp & Footer metadata */}
+                  <div className="border-t-2 border-black pt-2 flex items-center justify-between">
+                    <div className="text-[7.5px] font-sans font-extrabold text-slate-700 space-y-0.5 leading-tight">
+                      <p className="uppercase tracking-wider font-black">STORY AUTHOR:</p>
+                      <p className="text-[#dc2626] text-[8px] font-black font-serif">
+                        By {blog.authorId && userProfiles[blog.authorId]?.displayName 
+                          ? userProfiles[blog.authorId].displayName 
+                          : (blog.author || 'RollFetch Editorial Correspondent')}
+                      </p>
+                    </div>
+                    
+                    {/* Visual Stamp Ribbon */}
+                    <div className="border border-[#b91c1c] text-[#b91c1c] px-2 py-1 text-[7.5px] uppercase font-black tracking-widest bg-white rotate-[-3deg] rounded shadow-sm flex items-center gap-1">
+                      <CheckCircle2 size={9} /> VERIFIED NEWS
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {posterError && (
+                <p className="text-[10px] font-medium text-rose-300 leading-relaxed bg-rose-500/10 p-2.5 rounded border border-rose-500/20">
+                  ⚠️ {posterError}
+                </p>
+              )}
+
+              {/* Action operations button row */}
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={handleDownloadPoster}
+                  disabled={isGeneratingShare}
+                  className="flex-1 bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 text-black py-3 text-[10px] font-black uppercase tracking-widest rounded border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-all cursor-pointer flex items-center justify-center gap-2 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_rgba(0,0,0,1)]"
+                >
+                  {isGeneratingShare ? 'Generating Image...' : 'Save Media Poster'} 
+                  <Check size={14} />
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
