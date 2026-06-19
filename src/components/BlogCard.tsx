@@ -1,6 +1,7 @@
 import { Calendar, User, ArrowRight, Share2, MessageSquare, ThumbsUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Blog } from '../types';
+import { useBlogs } from '../context/BlogContext';
 
 interface BlogCardProps {
   blog: Blog;
@@ -23,6 +24,7 @@ const renderDate = (d: any) => {
 };
 
 export default function BlogCard({ blog }: BlogCardProps) {
+  const { userProfiles } = useBlogs();
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
     const text = `Check this out: ${blog.title}\n\nRead more at: `;
@@ -56,7 +58,9 @@ export default function BlogCard({ blog }: BlogCardProps) {
           </div>
           <div className="flex items-center gap-1 border-l border-primary/20 pl-4">
             <User size={12} className="text-secondary" />
-            {blog.author}
+            {blog.authorId && userProfiles[blog.authorId]?.displayName 
+              ? userProfiles[blog.authorId].displayName 
+              : (blog.author || 'RollFetch Editorial Correspondent')}
           </div>
         </div>
 

@@ -84,7 +84,7 @@ export default function BlogDetails() {
   const { slug: rawSlug } = useParams<{ slug: string }>();
   const slug = rawSlug?.replace(/\/$/, '')?.trim() || "";
   const navigate = useNavigate();
-  const { blogs, addComment, addReaction, loading, config } = useBlogs();
+  const { blogs, addComment, addReaction, loading, config, userProfiles } = useBlogs();
   const blog = blogs.find(b => b.slug?.toLowerCase()?.trim() === slug.toLowerCase());
   
   const [commentName, setCommentName] = useState('');
@@ -302,7 +302,11 @@ export default function BlogDetails() {
             
             <div className="flex flex-wrap items-center gap-y-2 gap-x-4 sm:gap-x-6 text-xs font-semibold text-slate-500">
               <span className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-neutral-200">
-                By <span className="font-black text-[#dc2626] font-serif hover:underline cursor-pointer">{blog.author || 'RollFetch Editorial Correspondent'}</span>
+                By <span className="font-black text-[#dc2626] font-serif hover:underline cursor-pointer">
+                  {blog.authorId && userProfiles[blog.authorId]?.displayName 
+                    ? userProfiles[blog.authorId].displayName 
+                    : (blog.author || 'RollFetch Editorial Correspondent')}
+                </span>
               </span>
               
               <span className="h-3 w-px bg-slate-300 hidden md:inline" />

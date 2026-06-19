@@ -29,6 +29,7 @@ export default function AdminPanel() {
     applications, updateApplication,
     config, updateConfig,
     userProfile, updateProfile,
+    userProfiles,
     isAdmin, isApprovedWriter, user, loading 
   } = useBlogs();
   const [activeTab, setActiveTab] = useState<AdminTab>('dispatches');
@@ -742,7 +743,7 @@ export default function AdminPanel() {
                       </div>
                       <div className="min-w-0 flex-grow">
                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/40 group-hover:text-primary transition-colors">
-                          {blog.category} _ {blog.date} {blog.author ? ` _ By ${blog.author}` : ''}
+                          {blog.category} _ {blog.date} {(blog.author || (blog.authorId && userProfiles[blog.authorId]?.displayName)) ? ` _ By ${blog.authorId && userProfiles[blog.authorId]?.displayName ? userProfiles[blog.authorId].displayName : blog.author}` : ''}
                         </span>
                         <h4 className="text-lg sm:text-xl font-serif font-black underline decoration-black/5 group-hover:decoration-secondary transition-all truncate">{blog.title}</h4>
                       </div>

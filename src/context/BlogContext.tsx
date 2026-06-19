@@ -24,6 +24,7 @@ interface BlogContextType {
   user: User | null;
   userApplication: WriterApplication | null;
   userProfile: UserProfile | null;
+  userProfiles: Record<string, UserProfile>;
   isApprovedWriter: boolean;
   isAdmin: boolean;
   loading: boolean;
@@ -50,7 +51,22 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userApplication, setUserApplication] = useState<WriterApplication | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({});
   const [loading, setLoading] = useState(true);
+
+  // Subscribe to all public user profiles to resolve author names in real-time
+  useEffect(() => {
+    const unsubAllProfiles = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const profiles: Record<string, UserProfile> = {};
+      snapshot.docs.forEach((doc) => {
+        profiles[doc.id] = { id: doc.id, ...doc.data() } as UserProfile;
+      });
+      setUserProfiles(profiles);
+    }, (error) => {
+      console.warn("User profiles global snapshot failed:", error);
+    });
+    return () => unsubAllProfiles();
+  }, []);
 
   const isAdmin = user?.email === ADMIN_EMAIL;
   const isApprovedWriter = isAdmin || userApplication?.status === 'approved';
@@ -297,6 +313,7 @@ export function BlogProvider({ children }: { children: React.ReactNode }) {
       user, 
       userApplication,
       userProfile,
+      userProfiles,
       isApprovedWriter,
       isAdmin, 
       loading,
